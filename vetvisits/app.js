@@ -19,57 +19,60 @@ app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/gov
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Validation rules for the form
-const validateAnimalRegistration = [
-  body('species')
-    .notEmpty()
-    .withMessage('Select an animal species')
-    .isIn(['cattle', 'sheep', 'pigs', 'poultry', 'horses', 'goats', 'other'])
-    .withMessage('Select a valid animal species'),
-  
-  body('animalCount')
-    .notEmpty()
-    .withMessage('Enter the number of animals')
-    .isInt({ min: 1, max: 10000 })
-    .withMessage('Enter a number between 1 and 10,000')
+// Define animal species options
+const animalSpecies = [
+  { value: 'cattle', text: 'Cattle' },
+  { value: 'sheep', text: 'Sheep' },
+  { value: 'pigs', text: 'Pigs' },
+  { value: 'horses', text: 'Horses' },
+  { value: 'poultry', text: 'Poultry' },
+  { value: 'other', text: 'Other' }
 ];
 
-// Home page - GET request
+// Routes
 app.get('/', (req, res) => {
   res.render('index', { 
-    title: 'Register animals for vet visit',
+    title: 'Register Animals for Vet Visits',
+    serviceName: 'Farm Animal Vet Visit Registration',
     errors: null, 
     formData: {},
-    submitted: false
+    animalSpecies: animalSpecies
   });
 });
 
-// Form submission - POST request
-app.post('/', validateAnimalRegistration, (req, res) => {
+app.post('/', [
+  body('species')
+    .notEmpty()
+    .withMessage('Select the animal species'),
+  body('count')
+    .notEmpty()
+    .withMessage('Enter the number of animals')
+    .isInt({ min: 1 })
+    .withMessage('Number of animals must be 1 or more')
+], (req, res) => {
   const errors = validationResult(req);
+  const formData = req.body;
   
   if (!errors.isEmpty()) {
-    // If validation fails, show the form with errors
-    res.render('index', {
-      title: 'Register animals for vet visit',
+    return res.render('index', {
+      title: 'Register Animals for Vet Visits',
+      serviceName: 'Farm Animal Vet Visit Registration',
       errors: errors.array(),
-      formData: req.body,
-      submitted: false
-    });
-  } else {
-    // If validation passes, show success
-    res.render('index', {
-      title: 'Animals registered successfully',
-      errors: null,
-      formData: req.body,
-      submitted: true
+      formData: formData,
+      animalSpecies: animalSpecies
     });
   }
+  
+  // If validation passes, show success page
+  res.render('success', {
+    title: 'Registration Complete',
+    serviceName: 'Farm Animal Vet Visit Registration',
+    formData: formData
+  });
 });
 
+// Start the server
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
-  console.log(`Veterinary visits app running on http://localhost:${PORT}`);
-  console.log('Press Ctrl+C to stop the server');
+  console.log(`App running on http://localhost:${PORT}`);
 });

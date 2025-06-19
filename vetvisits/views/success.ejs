@@ -55,83 +55,47 @@
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
           
-          <!-- Page heading -->
-          <h1 class="govuk-heading-xl"><%= title %></h1>
-          
-          <!-- Introduction -->
-          <p class="govuk-body">Use this service to register farm animals for veterinary visits.</p>
-          
-          <!-- Error summary (if errors exist) -->
-          <% if (errors && errors.length > 0) { %>
-          <div class="govuk-error-summary" data-module="govuk-error-summary">
-            <div role="alert">
-              <h2 class="govuk-error-summary__title">There is a problem</h2>
-              <div class="govuk-error-summary__body">
-                <ul class="govuk-list govuk-error-summary__list">
-                  <% errors.forEach(function(error) { %>
-                  <li><a href="#<%= error.path %>"><%= error.msg %></a></li>
-                  <% }); %>
-                </ul>
-              </div>
+          <!-- Success panel -->
+          <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">
+              Registration complete
+            </h1>
+            <div class="govuk-panel__body">
+              Your reference number<br><strong>HDJ2123F</strong>
             </div>
           </div>
-          <% } %>
           
-          <!-- Registration form -->
-          <form action="/" method="post" novalidate>
-            
-            <!-- Species selection -->
-            <div class="govuk-form-group <%= errors && errors.find(e => e.path === 'species') ? 'govuk-form-group--error' : '' %>">
-              <label class="govuk-label govuk-label--m" for="species">
+          <h2 class="govuk-heading-m">Registration details</h2>
+          
+          <!-- Summary list -->
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
                 Animal species
-              </label>
-              <div id="species-hint" class="govuk-hint">
-                Select the type of animals requiring a visit
-              </div>
-              <% if (errors && errors.find(e => e.path === 'species')) { %>
-              <p id="species-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> <%= errors.find(e => e.path === 'species').msg %>
-              </p>
-              <% } %>
-              <select class="govuk-select <%= errors && errors.find(e => e.path === 'species') ? 'govuk-select--error' : '' %>" 
-                      id="species" 
-                      name="species"
-                      aria-describedby="species-hint <%= errors && errors.find(e => e.path === 'species') ? 'species-error' : '' %>">
-                <option value="" <%= !formData.species ? 'selected' : '' %>>Please select</option>
-                <% animalSpecies.forEach(function(animal) { %>
-                  <option value="<%= animal.value %>" <%= formData.species === animal.value ? 'selected' : '' %>><%= animal.text %></option>
-                <% }); %>
-              </select>
+              </dt>
+              <dd class="govuk-summary-list__value">
+                <%= formData.species.charAt(0).toUpperCase() + formData.species.slice(1) %>
+              </dd>
             </div>
-            
-            <!-- Animal count -->
-            <div class="govuk-form-group <%= errors && errors.find(e => e.path === 'count') ? 'govuk-form-group--error' : '' %>">
-              <label class="govuk-label govuk-label--m" for="count">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
                 Number of animals
-              </label>
-              <div id="count-hint" class="govuk-hint">
-                Enter the total number of animals that need to be seen
-              </div>
-              <% if (errors && errors.find(e => e.path === 'count')) { %>
-              <p id="count-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> <%= errors.find(e => e.path === 'count').msg %>
-              </p>
-              <% } %>
-              <input class="govuk-input govuk-input--width-5 <%= errors && errors.find(e => e.path === 'count') ? 'govuk-input--error' : '' %>"
-                     id="count" 
-                     name="count" 
-                     type="number" 
-                     min="1"
-                     value="<%= formData.count || '' %>"
-                     aria-describedby="count-hint <%= errors && errors.find(e => e.path === 'count') ? 'count-error' : '' %>">
+              </dt>
+              <dd class="govuk-summary-list__value">
+                <%= formData.count %>
+              </dd>
             </div>
-            
-            <!-- Submit button -->
-            <button class="govuk-button" data-module="govuk-button">
-              Register animals
-            </button>
-            
-          </form>
+          </dl>
+          
+          <h2 class="govuk-heading-m">What happens next</h2>
+          
+          <p class="govuk-body">We've sent your registration details to the veterinary service.</p>
+          
+          <p class="govuk-body">They will contact you within 5 working days to arrange a visit to your farm.</p>
+          
+          <p class="govuk-body">
+            <a href="/" class="govuk-link">Register more animals</a>
+          </p>
           
         </div>
       </div>
