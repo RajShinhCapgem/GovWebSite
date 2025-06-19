@@ -1,0 +1,28 @@
+{
+  "name": "vetvisits",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "npm run test:accessibility && npm run test:unit",
+    "test:accessibility": "@axe-core/cli http://localhost:3000",
+    "test:unit": "jest"
+  },
+  "keywords": ["govuk", "veterinary", "animal", "registration"],
+  "author": "",
+  "license": "ISC",
+  "description": "Animal registration system for veterinary visits using GOV.UK Design System",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-validator": "^7.2.1",
+    "govuk-frontend": "^5.10.2"
+  },
+  "devDependencies": {
+    "@axe-core/cli": "^4.10.2",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.10"
+  }
+}

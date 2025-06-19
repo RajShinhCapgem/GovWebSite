@@ -105,16 +105,18 @@ Add to package.json:
     "start": "node app.js",
     "dev": "nodemon app.js",
     "test": "npm run test:accessibility && npm run test:unit",
-    "test:accessibility": "axe-cli http://localhost:3000",
+    "test:accessibility": "@axe-core/cli http://localhost:3000",
     "test:unit": "jest"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
-    "axe-cli": "^4.8.2",
+    "@axe-core/cli": "^4.8.2",
     "jest": "^29.7.0"
   }
 }
 ```
+
+**CRITICAL**: Use `@axe-core/cli` not `axe-cli` - the latter package is deprecated and will cause installation failures.
 
 ### Environment Configuration
 Create `.env` file for environment variables:
@@ -386,267 +388,299 @@ Always initialize GOV.UK components after DOM load:
 
 ## Common Pitfalls and Troubleshooting
 
-### Asset Loading Issues
-**Problem**: Styles not loading, plain HTML appearance
-**Cause**: Incorrect asset paths or middleware configuration
-**Solution**: 
-1. Verify Express static middleware path: `node_modules/govuk-frontend/dist`
-2. Check CSS link: `/govuk-frontend/govuk/govuk-frontend.min.css`
-3. Check JavaScript link: `/govuk-frontend/govuk/govuk-frontend.min.js`
-4. Restart server after path changes
+## CRITICAL: Pre-Setup Verification
+Before starting any development, verify these essential steps to avoid setup failures:
 
-### Directory Structure Validation
-Verify your govuk-frontend package structure:
+### Dependency Version Compatibility Check
+**MUST USE CORRECT PACKAGE NAMES**:
+- ❌ `axe-cli` (deprecated, causes npm install failures)  
+- ✅ `@axe-core/cli` (current package)
+
+### Required Setup Verification Commands
+Run these commands IN ORDER before development:
+
+```bash
+# 1. Verify Node.js version (must be 16+)
+node --version
+
+# 2. Verify npm version (must be 8+)
+npm --version
+
+# 3. Create project and install dependencies with EXACT package names
+npm init -y
+npm install express@^4.18.2 ejs@^3.1.9 govuk-frontend@^5.10.2 body-parser@^1.20.2 express-validator@^7.0.1
+npm install --save-dev nodemon@^3.0.2 @axe-core/cli@^4.8.2 jest@^29.7.0
+
+# 4. Verify GOV.UK Frontend installed correctly
+ls node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css
+ls node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.js
+
+# 5. Test basic Express setup
+npm start
+
+# 6. Check browser at http://localhost:3000 for proper GOV.UK styling
+```
+
+### Critical File Structure Verification
+After installation, verify this EXACT structure exists:
 ```
 node_modules/govuk-frontend/
 ├── dist/
 │   └── govuk/
-│       ├── govuk-frontend.min.css
-│       ├── govuk-frontend.min.js
+│       ├── govuk-frontend.min.css  (MUST EXIST)
+│       ├── govuk-frontend.min.js   (MUST EXIST)
 │       └── assets/
 └── package.json
 ```
 
-### Template Integration Issues
-**EJS Template Problems**:
-- Always include `<!DOCTYPE html>` and `lang="en"`
-- Use `class="govuk-template"` on `<html>` element
-- Include JavaScript enablement script in `<body>`
-- Initialize with `window.GOVUKFrontend.initAll()`
-
-### Form Validation Integration
-**Express-validator Integration**:
+### Middleware Configuration Requirements
+**EXACT ORDER REQUIRED** in app.js:
 ```javascript
-// Server-side validation
-const { body, validationResult } = require('express-validator');
+// 1. Body parser FIRST (before any routes)
+app.use(bodyParser.urlencoded({ extended: true }));
 
-const validateForm = [
-  body('field-name')
-    .notEmpty()
-    .withMessage('Error message for field')
-];
+// 2. Static files (your public folder)
+app.use(express.static('public'));
 
-app.post('/submit', validateForm, (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.render('template', {
-      errors: errors.array(),
-      formData: req.body
-    });
+// 3. GOV.UK Frontend assets - EXACT PATH REQUIRED
+app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist')));
+
+// 4. Template engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+```
+
+### Template Asset Paths (CANNOT BE CHANGED)
+```html
+<!-- CSS - EXACT PATH -->
+<link href="/govuk-frontend/govuk/govuk-frontend.min.css" rel="stylesheet">
+
+<!-- JavaScript - EXACT PATH -->
+<script src="/govuk-frontend/govuk/govuk-frontend.min.js"></script>
+<script>window.GOVUKFrontend.initAll()</script>
+```
+
+## CRITICAL: First-Time Setup Guide
+
+### Step-by-Step Setup (Follow EXACTLY)
+
+#### Step 1: Environment Verification
+```bash
+# Check Node.js version (must be 16+)
+node --version
+# If version is below 16, install Node.js 18+ from nodejs.org
+
+# Check npm version (must be 8+)
+npm --version
+# If version is below 8, run: npm install -g npm@latest
+```
+
+#### Step 2: Create Project Structure
+```bash
+# Create project directory
+mkdir vetvisits
+cd vetvisits
+
+# Initialize npm project
+npm init -y
+```
+
+#### Step 3: Install Dependencies (EXACT ORDER)
+```bash
+# Install production dependencies
+npm install express@^4.18.2 ejs@^3.1.9 govuk-frontend@^5.10.2 body-parser@^1.20.2 express-validator@^7.0.1
+
+# Install development dependencies (NOTE: @axe-core/cli NOT axe-cli)
+npm install --save-dev nodemon@^3.0.2 @axe-core/cli@^4.8.2 jest@^29.7.0
+```
+
+#### Step 4: Verify GOV.UK Frontend Installation
+```bash
+# Check if required files exist
+ls node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css
+ls node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.js
+
+# If files don't exist, reinstall govuk-frontend
+npm uninstall govuk-frontend
+npm install govuk-frontend@latest
+```
+
+#### Step 5: Update package.json Scripts
+```json
+{
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "npm run test:accessibility && npm run test:unit",
+    "test:accessibility": "@axe-core/cli http://localhost:3000",
+    "test:unit": "jest"
   }
-  // Process valid form
-});
+}
 ```
 
-### Development Environment Issues
-**Node.js Version**: Use Node.js 16+ for compatibility
-**Port Conflicts**: Use `taskkill /F /IM node.exe` on Windows to clear ports
-**Asset Caching**: Hard refresh (Ctrl+F5) after asset path changes
-
-### Quick Verification Steps
-After setup, verify:
-1. ✅ Blue GOV.UK header with crown logo visible
-2. ✅ Proper typography (Transport font)
-3. ✅ Form elements styled correctly
-4. ✅ Console shows no 404 errors for CSS/JS
-5. ✅ `window.GOVUKFrontend` object exists in browser console
-
-### Pre-Development Checklist
-Before starting development, verify:
-- [ ] Node.js 16+ installed
-- [ ] `govuk-frontend` package installed
-- [ ] Express static middleware configured correctly
-- [ ] CSS/JS paths pointing to correct files
-- [ ] Template engine (EJS) configured
-- [ ] Error handling middleware in place
-
-### Post-Development Validation
-After implementing features, test:
-- [ ] **Visual Check**: GOV.UK styling applied correctly
-- [ ] **Console Check**: No 404 errors for assets in browser console
-- [ ] **Accessibility Check**: Skip link, keyboard navigation work
-- [ ] **Mobile Check**: Responsive design functions properly
-- [ ] **Form Check**: Validation and error handling work
-- [ ] **Performance Check**: Page loads under 2 seconds
-- [ ] **Cross-browser Check**: Works in Chrome, Firefox, Safari, Edge
-
-### Automated Testing Integration
+#### Step 6: Create app.js (EXACT MIDDLEWARE ORDER)
 ```javascript
-// Jest test example for GOV.UK components
-describe('GOV.UK Integration', () => {
-  test('should load GOV.UK Frontend styles', async () => {
-    const response = await request(app)
-      .get('/govuk-frontend/govuk/govuk-frontend.min.css')
-      .expect(200);
-    expect(response.headers['content-type']).toMatch(/css/);
-  });
+const express = require('express');
+const path = require('path');
+const bodyParser = require('body-parser');
 
-  test('should initialize GOV.UK components', async () => {
-    const response = await request(app)
-      .get('/')
-      .expect(200);
-    expect(response.text).toContain('window.GOVUKFrontend.initAll()');
-  });
+const app = express();
+
+// CRITICAL ORDER - DO NOT CHANGE
+// 1. Body parser FIRST
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// 2. Static files (public folder)
+app.use(express.static('public'));
+
+// 3. GOV.UK Frontend assets - EXACT PATH
+app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist')));
+
+// 4. Template engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Routes come after middleware
+app.get('/', (req, res) => {
+  res.render('index', { title: 'Test Page', errors: null, formData: {} });
+});
+
+app.listen(3000, () => {
+  console.log('App running on http://localhost:3000');
 });
 ```
 
-## Code Standards
+#### Step 7: Create Basic Template Test
+Create `views/index.ejs`:
+```html
+<!DOCTYPE html>
+<html lang="en" class="govuk-template">
+<head>
+  <meta charset="utf-8">
+  <title><%= title %> - GOV.UK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/govuk-frontend/govuk/govuk-frontend.min.css" rel="stylesheet">
+</head>
+<body class="govuk-template__body">
+  <script>document.body.className = 'js-enabled' + ' ' + document.body.className;</script>
+  
+  <header class="govuk-header" role="banner" data-module="govuk-header">
+    <div class="govuk-header__container govuk-width-container">
+      <div class="govuk-header__logo">
+        <a href="/" class="govuk-header__link govuk-header__link--homepage">
+          <span class="govuk-header__logotype">
+            <span class="govuk-header__logotype-text">GOV.UK</span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </header>
 
-### HTML Requirements
-- Use semantic HTML5 elements
-- Include proper ARIA attributes where needed
-- All form elements must have associated labels
-- Use GOV.UK CSS classes exclusively for styling
-- Maintain proper heading hierarchy (h1, h2, h3, etc.)
+  <div class="govuk-width-container">
+    <main class="govuk-main-wrapper" id="main-content" role="main">
+      <h1 class="govuk-heading-xl"><%= title %></h1>
+      <p class="govuk-body">If you can see this styled correctly, GOV.UK Frontend is working!</p>
+    </main>
+  </div>
 
-### CSS Guidelines
-- Import GOV.UK Frontend CSS: `@import "node_modules/govuk-frontend/govuk/all"`
-- Use utility classes provided by GOV.UK Frontend
-- Avoid custom CSS unless absolutely necessary
-- If custom CSS is needed, follow BEM methodology
-- Maintain mobile-first responsive approach
+  <script src="/govuk-frontend/govuk/govuk-frontend.min.js"></script>
+  <script>window.GOVUKFrontend.initAll()</script>
+</body>
+</html>
+```
 
-### JavaScript Requirements
-- Initialize GOV.UK components: `GOVUKFrontend.initAll()`
-- Use progressive enhancement principles
-- Ensure functionality works without JavaScript
-- Follow GOV.UK JavaScript coding standards
-- Include proper error handling
+#### Step 8: Test Setup
+```bash
+# Start the application
+npm start
 
-## Testing Requirements
+# Should see: "App running on http://localhost:3000"
+# Open http://localhost:3000 in browser
+# You should see:
+# - Blue GOV.UK header
+# - GOV.UK Transport font
+# - Proper spacing and typography
+# - No 404 errors in browser console
+```
 
-### Accessibility Testing
-- Test with screen readers (NVDA, JAWS, VoiceOver)
-- Keyboard navigation testing
-- Color contrast validation
-- WAVE or similar accessibility tool checks
-- Manual testing with users who have disabilities
+#### Step 9: Verification Checklist
+- [ ] `npm start` runs without errors
+- [ ] Page loads at http://localhost:3000
+- [ ] Blue GOV.UK header visible
+- [ ] Text uses GOV.UK Transport font (not default browser font)
+- [ ] Browser console shows no 404 errors
+- [ ] `window.GOVUKFrontend` object exists in browser console
 
-### Browser Support
-- Internet Explorer 11+
-- Chrome, Firefox, Safari (latest 2 versions)
-- Edge (latest version)
-- Mobile browsers on iOS and Android
+### If Setup Fails
 
-### Device Testing
-- Desktop: 1024px and above
-- Tablet: 768px to 1023px  
-- Mobile: 320px to 767px
-- Test on actual devices when possible
+#### CSS/JS Not Loading (Plain HTML Look)
+1. Stop server (Ctrl+C)
+2. Check middleware order in app.js
+3. Verify exact paths in template
+4. Restart server: `npm start`
+5. Hard refresh browser (Ctrl+F5)
 
-## Content Guidelines
+#### 404 Errors for Assets
+1. Check files exist: `ls node_modules/govuk-frontend/dist/govuk/`
+2. Verify middleware path: `/govuk-frontend` route
+3. Check template paths: `/govuk-frontend/govuk/govuk-frontend.min.css`
 
-### Writing Style
-- Follow GOV.UK content style guide
-- Use plain English (aim for reading age 9)
-- Front-load important information
-- Use active voice
-- Keep sentences under 25 words
-- Use bullet points for lists
-- Write helpful error messages
+#### npm install Failures
+1. Delete `node_modules` and `package-lock.json`
+2. Run `npm install` again
+3. Check package.json for correct package names (`@axe-core/cli`)
 
-### Tone of Voice
-- Helpful and reassuring
-- Clear and direct
-- Human, not robotic
-- Appropriate to the context
-- Inclusive language only
+### Emergency Troubleshooting Guide
 
-## Performance Standards
+#### Issue: `npm install` fails with package not found errors
+**Immediate Fix**:
+1. Check package.json for `@axe-core/cli` (NOT `axe-cli`)
+2. Delete `node_modules` and `package-lock.json`
+3. Run `npm install` again
+4. If still failing, check Node.js/npm versions
 
-### Page Load Requirements
-- First Contentful Paint: <1.5 seconds
-- Largest Contentful Paint: <2.5 seconds  
-- Cumulative Layout Shift: <0.1
-- First Input Delay: <100ms
+#### Issue: Styles not loading (plain HTML appearance)
+**Immediate Fix**:
+1. Check browser console for 404 errors
+2. Verify middleware order in app.js (body parser FIRST)
+3. Confirm exact paths: `/govuk-frontend/govuk/govuk-frontend.min.css`
+4. Restart server completely
+5. Hard refresh browser (Ctrl+F5)
 
-### Optimization
-- Minimize HTTP requests
-- Optimize images and assets
-- Use GOV.UK Frontend's built-in optimization
-- Enable gzip compression
-- Implement proper caching headers
+#### Issue: GOV.UK Frontend files not found
+**Immediate Fix**:
+```bash
+# Verify files exist
+ls node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css
 
-## Security Considerations
+# If missing, reinstall
+npm uninstall govuk-frontend
+npm install govuk-frontend@latest
 
-### Data Protection
-- Follow GDPR requirements
-- Implement proper form validation
-- Use HTTPS for all connections
-- Secure session management
-- Regular security audits
+# Re-verify files exist
+ls node_modules/govuk-frontend/dist/govuk/
+```
 
-### Privacy
-- Clear privacy notices
-- Cookie consent management
-- Data retention policies
-- User data deletion capabilities
+#### Issue: Components not interactive
+**Immediate Fix**:
+1. Check JavaScript console for errors
+2. Verify `window.GOVUKFrontend.initAll()` is called
+3. Ensure components have `data-module` attributes
+4. Confirm JavaScript file loads correctly
 
-## Documentation Requirements
+### Success Validation Commands
+After setup, ALL these commands must succeed:
+```bash
+# Check GOV.UK files exist
+ls node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css
+ls node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.js
 
-### Code Documentation
-- Comment complex logic
-- Document component usage
-- Include accessibility notes
-- Provide setup instructions
-- Maintain changelog
+# Start server without errors
+npm start
 
-### User Documentation
-- Help text for complex forms
-- Clear instructions for each step
-- Contact information for support
-- Service availability information
+# Check for proper styling in browser
+# Navigate to: http://localhost:3000
+# Must see: Blue header, GOV.UK font, no console errors
+```
 
-## Quality Assurance
-
-### Code Review Checklist
-- [ ] Uses official GOV.UK components
-- [ ] Follows accessibility standards
-- [ ] Implements proper error handling
-- [ ] Mobile responsive design
-- [ ] Cross-browser compatibility
-- [ ] Performance optimization
-- [ ] Security best practices
-- [ ] Content follows style guide
-
-### Testing Checklist
-- [ ] Automated accessibility testing
-- [ ] Manual accessibility testing
-- [ ] Cross-browser testing
-- [ ] Mobile device testing
-- [ ] Performance testing
-- [ ] Security testing
-- [ ] User acceptance testing
-
-## Resources and References
-
-### Official Documentation
-- GOV.UK Design System: https://design-system.service.gov.uk/
-- GOV.UK Frontend GitHub: https://github.com/alphagov/govuk-frontend
-- Government Design Principles: https://www.gov.uk/guidance/government-design-principles
-- GOV.UK Service Manual: https://www.gov.uk/service-manual
-
-### Community Resources
-- GitHub Discussions for each component
-- X-GOVUK community resources: https://x-govuk.github.io/
-- GOV.UK Prototype Kit: https://prototype-kit.service.gov.uk/
-
-### Accessibility Resources
-- Web Content Accessibility Guidelines (WCAG 2.1)
-- GOV.UK Accessibility Strategy
-- Screen reader testing guidance
-
-## Important Notes
-
-1. **Always use official GOV.UK components** - Never create custom versions
-2. **Test with real users** - Especially those with accessibility needs  
-3. **Mobile-first approach** - Design for mobile, enhance for desktop
-4. **Performance matters** - Government services must be fast and reliable
-5. **Accessibility is mandatory** - Not optional for government services
-6. **Consistency is key** - Users expect familiar patterns across government
-7. **Content comes first** - Design serves the content, not vice versa
-8. **Iterate based on user feedback** - Continuously improve based on research
-9. **Security by design** - Build security in from the start
-10. **Keep it simple** - Remove anything that doesn't serve user needs
-
-Remember: The GOV.UK Design System exists to help you build accessible, user-centered government services. When in doubt, follow the existing patterns and components rather than creating new ones.
+**STOP AND FIX if any command fails before continuing development.**
