@@ -6,21 +6,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0c0c">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="/govuk-frontend/assets/images/favicon.ico" type="image/x-icon">
-  <link rel="mask-icon" href="/govuk-frontend/assets/images/govuk-mask-icon.svg" color="#0b0c0c">
-  <link rel="apple-touch-icon" sizes="180x180" href="/govuk-frontend/assets/images/govuk-apple-touch-icon-180x180.png">
-  <link rel="apple-touch-icon" sizes="167x167" href="/govuk-frontend/assets/images/govuk-apple-touch-icon-167x167.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/govuk-frontend/assets/images/govuk-apple-touch-icon-152x152.png">
-  <link rel="apple-touch-icon" href="/govuk-frontend/assets/images/govuk-apple-touch-icon.png">
   
+  <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="/govuk-frontend/govuk/assets/images/favicon.ico" type="image/x-icon">
+  <link rel="mask-icon" href="/govuk-frontend/govuk/assets/images/govuk-mask-icon.svg" color="#0b0c0c">
+  <link rel="apple-touch-icon" sizes="180x180" href="/govuk-frontend/govuk/assets/images/govuk-apple-touch-icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/govuk-frontend/govuk/assets/images/govuk-apple-touch-icon-167x167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/govuk-frontend/govuk/assets/images/govuk-apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" href="/govuk-frontend/govuk/assets/images/govuk-apple-touch-icon.png">
+  
+  <!-- CSS - Using exact path from copilot-instructions.md -->
   <link href="/govuk-frontend/govuk/govuk-frontend.min.css" rel="stylesheet">
 </head>
 
 <body class="govuk-template__body">
+  <!-- JavaScript enablement script as per copilot-instructions.md -->
   <script>document.body.className = 'js-enabled' + ' ' + document.body.className;</script>
   
+  <!-- Skip link for accessibility -->
   <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
+  <!-- Header with crown logo and service name -->
   <header class="govuk-header" role="banner" data-module="govuk-header">
     <div class="govuk-header__container govuk-width-container">
       <div class="govuk-header__logo">
@@ -43,45 +48,38 @@
     </div>
   </header>
 
+  <!-- Main content container -->
   <div class="govuk-width-container">
     <main class="govuk-main-wrapper" id="main-content" role="main">
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
           
+          <!-- Confirmation panel for successful submission -->
           <div class="govuk-panel govuk-panel--confirmation">
-            <h1 class="govuk-panel__title">Animal registration complete</h1>
+            <h1 class="govuk-panel__title"><%= title %></h1>
             <div class="govuk-panel__body">
-              Your reference number<br><strong>VV<%= Math.floor(Math.random() * 1000000) %></strong>
+              Your reference number<br><strong><%= referenceNumber %></strong>
             </div>
           </div>
 
-          <p class="govuk-body">We have sent you a confirmation email.</p>
-
-          <h2 class="govuk-heading-m">What happens next</h2>
-          <p class="govuk-body">
-            A veterinary practice will contact you within 2 working days to arrange your visit.
-          </p>
-          <p class="govuk-body">
-            They will call you on <strong><%= data.contactPhone %></strong> to confirm the appointment details.
-          </p>
-
-          <h2 class="govuk-heading-m">Your registration details</h2>
+          <!-- Summary of submitted data -->
+          <h2 class="govuk-heading-m">Registration details</h2>
           
           <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
               <dt class="govuk-summary-list__key">
-                Animal type
+                Animal species
               </dt>
               <dd class="govuk-summary-list__value">
-                <%= data.animalType %>
+                <%= animalSpecies %>
               </dd>
             </div>
             <div class="govuk-summary-list__row">
               <dt class="govuk-summary-list__key">
-                Animal ID
+                Number of animals
               </dt>
               <dd class="govuk-summary-list__value">
-                <%= data.animalId %>
+                <%= animalCount %>
               </dd>
             </div>
             <div class="govuk-summary-list__row">
@@ -89,15 +87,7 @@
                 Farm postcode
               </dt>
               <dd class="govuk-summary-list__value">
-                <%= data.farmPostcode %>
-              </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key">
-                Visit date
-              </dt>
-              <dd class="govuk-summary-list__value">
-                <%= data.visitDate %>
+                <%= farmPostcode %>
               </dd>
             </div>
             <div class="govuk-summary-list__row">
@@ -105,21 +95,36 @@
                 Contact phone
               </dt>
               <dd class="govuk-summary-list__value">
-                <%= data.contactPhone %>
+                <%= contactPhone %>
               </dd>
             </div>
           </dl>
 
+          <!-- What happens next information -->
+          <h2 class="govuk-heading-m">What happens next</h2>
+          
+          <p class="govuk-body">We've sent your registration details to the relevant veterinary authority.</p>
+          
+          <p class="govuk-body">They will contact you within 2 working days to:</p>
+          
+          <ul class="govuk-list govuk-list--bullet">
+            <li>confirm the appointment details</li>
+            <li>provide any specific preparation instructions</li>
+            <li>arrange the veterinary visit schedule</li>
+          </ul>
+
+          <!-- Survey and feedback -->
+          <h2 class="govuk-heading-m">Help us improve this service</h2>
+          
           <p class="govuk-body">
-            <a href="/" class="govuk-link">Register another animal</a>
+            <a class="govuk-link" href="#" rel="noreferrer noopener" target="_blank">
+              What did you think of this service?
+            </a> (takes 30 seconds)
           </p>
 
-          <h2 class="govuk-heading-m">Help and support</h2>
+          <!-- Return to start -->
           <p class="govuk-body">
-            If you need to change or cancel your registration, call <strong>0300 200 7840</strong>.
-          </p>
-          <p class="govuk-body">
-            Phone lines are open Monday to Friday, 8:30am to 5pm (except public holidays).
+            <a href="/" class="govuk-link">Register more animals for vet visits</a>
           </p>
 
         </div>
@@ -127,6 +132,7 @@
     </main>
   </div>
 
+  <!-- Footer with standard government links -->
   <footer class="govuk-footer" role="contentinfo">
     <div class="govuk-width-container">
       <div class="govuk-footer__meta">
@@ -178,6 +184,8 @@
       </div>
     </div>
   </footer>
+
+  <!-- JavaScript - Using exact path from copilot-instructions.md -->
   <script src="/govuk-frontend/govuk/govuk-frontend.min.js"></script>
   <script>
     window.GOVUKFrontend.initAll()

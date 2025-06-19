@@ -1,6 +1,3 @@
-
-When chaining commands, always use; instead of && to ensure each command runs independently.
-
 # GOV.UK Design System - Development Instructions
 
 ## Overview
@@ -18,6 +15,152 @@ This application MUST follow the GOV.UK Design System standards to ensure consis
 2. Initialize all components with `GOVUKFrontend.initAll()`
 3. Include assets (fonts, images) from the govuk-frontend package
 4. Use the GOV.UK template structure as base
+
+### Express.js/Node.js Specific Setup
+
+#### Required Dependencies for Node.js Projects
+```json
+{
+  "dependencies": {
+    "express": "^4.18.2",
+    "ejs": "^3.1.9",
+    "govuk-frontend": "^5.10.2",
+    "body-parser": "^1.20.2",
+    "express-validator": "^7.0.1"
+  }
+}
+```
+
+#### Critical Asset Path Configuration
+**MUST** configure Express static middleware correctly to serve GOV.UK Frontend assets:
+
+```javascript
+const path = require('path');
+
+// Serve GOV.UK Frontend assets - CRITICAL PATH
+app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist')));
+```
+
+#### Template Asset Links (EJS/HTML)
+**EXACT** paths required for CSS and JavaScript:
+
+```html
+<!-- CSS - Use this exact path -->
+<link href="/govuk-frontend/govuk/govuk-frontend.min.css" rel="stylesheet">
+
+<!-- JavaScript - Use this exact path -->
+<script src="/govuk-frontend/govuk/govuk-frontend.min.js"></script>
+<script>
+  window.GOVUKFrontend.initAll()
+</script>
+```
+
+#### Middleware Order (Critical)
+```javascript
+// 1. Body parser FIRST
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// 2. Static files (your public folder)
+app.use(express.static('public'));
+
+// 3. GOV.UK Frontend assets
+app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist')));
+
+// 4. Template engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+```
+
+## Development Environment Requirements
+
+### Node.js Setup
+- **Node.js Version**: 16.x or higher (18.x+ recommended)
+- **npm Version**: 8.x or higher
+- **Package Manager**: npm (yarn also supported)
+
+### Project Structure Recommendations
+```
+project-root/
+├── app.js                 # Main Express application
+├── package.json           # Dependencies and scripts
+├── package-lock.json      # Dependency lock file
+├── views/                 # EJS templates
+│   ├── index.ejs         # Main pages
+│   └── includes/         # Reusable components
+├── public/               # Static assets
+│   ├── css/             # Custom CSS (minimal)
+│   ├── js/              # Custom JavaScript
+│   └── images/          # Images and icons
+├── routes/              # Express routes
+├── middleware/          # Custom middleware
+└── node_modules/        # Dependencies (auto-generated)
+    └── govuk-frontend/  # GOV.UK Frontend package
+```
+
+### Development Scripts
+Add to package.json:
+```json
+{
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "npm run test:accessibility && npm run test:unit",
+    "test:accessibility": "axe-cli http://localhost:3000",
+    "test:unit": "jest"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "axe-cli": "^4.8.2",
+    "jest": "^29.7.0"
+  }
+}
+```
+
+### Environment Configuration
+Create `.env` file for environment variables:
+```
+NODE_ENV=development
+PORT=3000
+SESSION_SECRET=your-secret-key-here
+```
+
+### Git Configuration
+Essential `.gitignore` entries:
+```
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+
+# Coverage directory
+coverage/
+
+# Build outputs
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+```
 
 ## Core Principles
 
@@ -132,42 +275,219 @@ Use only GOV.UK approved colors:
 </div>
 ```
 
-### Page Structure
+### Template Integration Patterns
+
+#### EJS Template Structure
 ```html
 <!DOCTYPE html>
 <html lang="en" class="govuk-template">
 <head>
   <meta charset="utf-8">
-  <title>Page title - Service name - GOV.UK</title>
+  <title><%= title %> - Service name - GOV.UK</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- GOV.UK Frontend CSS -->
+  <meta name="theme-color" content="#0b0c0c">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- GOV.UK Frontend assets -->
+  <link href="/govuk-frontend/govuk/govuk-frontend.min.css" rel="stylesheet">
 </head>
+
 <body class="govuk-template__body">
   <script>document.body.className = 'js-enabled' + ' ' + document.body.className;</script>
   
-  <a href="#main-content" class="govuk-skip-link">Skip to main content</a>
-  
-  <header class="govuk-header"><!-- Header content --></header>
-  
+  <!-- Skip link for accessibility -->
+  <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
+
+  <!-- Header -->
+  <header class="govuk-header" role="banner" data-module="govuk-header">
+    <!-- Header content -->
+  </header>
+
+  <!-- Main content -->
   <div class="govuk-width-container">
-    <div class="govuk-phase-banner"><!-- If applicable --></div>
-    <nav class="govuk-breadcrumbs"><!-- If applicable --></nav>
-    
-    <main class="govuk-main-wrapper" id="main-content">
+    <main class="govuk-main-wrapper" id="main-content" role="main">
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-          <!-- Main content -->
+          
+          <!-- Error summary (if errors exist) -->
+          <% if (errors && errors.length > 0) { %>
+          <div class="govuk-error-summary" data-module="govuk-error-summary">
+            <div role="alert">
+              <h2 class="govuk-error-summary__title">There is a problem</h2>
+              <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+                  <% errors.forEach(function(error) { %>
+                  <li><a href="#<%= error.path %>"><%= error.msg %></a></li>
+                  <% }); %>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <% } %>
+
+          <!-- Page content -->
+          
         </div>
       </div>
     </main>
   </div>
-  
-  <footer class="govuk-footer"><!-- Footer content --></footer>
-  
+
+  <!-- Footer -->
+  <footer class="govuk-footer" role="contentinfo">
+    <!-- Footer content -->
+  </footer>
+
   <!-- GOV.UK Frontend JavaScript -->
-  <script>GOVUKFrontend.initAll()</script>
+  <script src="/govuk-frontend/govuk/govuk-frontend.min.js"></script>
+  <script>window.GOVUKFrontend.initAll()</script>
 </body>
 </html>
+```
+
+#### Form Error Handling Pattern
+```html
+<!-- Form group with error handling -->
+<div class="govuk-form-group <%= errors && errors.find(e => e.path === 'field-name') ? 'govuk-form-group--error' : '' %>">
+  <label class="govuk-label govuk-label--m" for="field-name">
+    Field Label
+  </label>
+  <div id="field-name-hint" class="govuk-hint">
+    Hint text if needed
+  </div>
+  <% if (errors && errors.find(e => e.path === 'field-name')) { %>
+  <p id="field-name-error" class="govuk-error-message">
+    <span class="govuk-visually-hidden">Error:</span> <%= errors.find(e => e.path === 'field-name').msg %>
+  </p>
+  <% } %>
+  <input class="govuk-input <%= errors && errors.find(e => e.path === 'field-name') ? 'govuk-input--error' : '' %>" 
+         id="field-name" 
+         name="field-name" 
+         type="text" 
+         value="<%= formData['field-name'] || '' %>"
+         aria-describedby="field-name-hint <%= errors && errors.find(e => e.path === 'field-name') ? 'field-name-error' : '' %>">
+</div>
+```
+
+#### Component Initialization
+Always initialize GOV.UK components after DOM load:
+```javascript
+// At end of body tag
+<script>
+  // Initialize all GOV.UK components
+  window.GOVUKFrontend.initAll()
+  
+  // Or initialize specific components
+  // var buttons = document.querySelectorAll('[data-module="govuk-button"]')
+  // buttons.forEach(function(button) {
+  //   new GOVUKFrontend.Button(button)
+  // })
+</script>
+```
+
+## Common Pitfalls and Troubleshooting
+
+### Asset Loading Issues
+**Problem**: Styles not loading, plain HTML appearance
+**Cause**: Incorrect asset paths or middleware configuration
+**Solution**: 
+1. Verify Express static middleware path: `node_modules/govuk-frontend/dist`
+2. Check CSS link: `/govuk-frontend/govuk/govuk-frontend.min.css`
+3. Check JavaScript link: `/govuk-frontend/govuk/govuk-frontend.min.js`
+4. Restart server after path changes
+
+### Directory Structure Validation
+Verify your govuk-frontend package structure:
+```
+node_modules/govuk-frontend/
+├── dist/
+│   └── govuk/
+│       ├── govuk-frontend.min.css
+│       ├── govuk-frontend.min.js
+│       └── assets/
+└── package.json
+```
+
+### Template Integration Issues
+**EJS Template Problems**:
+- Always include `<!DOCTYPE html>` and `lang="en"`
+- Use `class="govuk-template"` on `<html>` element
+- Include JavaScript enablement script in `<body>`
+- Initialize with `window.GOVUKFrontend.initAll()`
+
+### Form Validation Integration
+**Express-validator Integration**:
+```javascript
+// Server-side validation
+const { body, validationResult } = require('express-validator');
+
+const validateForm = [
+  body('field-name')
+    .notEmpty()
+    .withMessage('Error message for field')
+];
+
+app.post('/submit', validateForm, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.render('template', {
+      errors: errors.array(),
+      formData: req.body
+    });
+  }
+  // Process valid form
+});
+```
+
+### Development Environment Issues
+**Node.js Version**: Use Node.js 16+ for compatibility
+**Port Conflicts**: Use `taskkill /F /IM node.exe` on Windows to clear ports
+**Asset Caching**: Hard refresh (Ctrl+F5) after asset path changes
+
+### Quick Verification Steps
+After setup, verify:
+1. ✅ Blue GOV.UK header with crown logo visible
+2. ✅ Proper typography (Transport font)
+3. ✅ Form elements styled correctly
+4. ✅ Console shows no 404 errors for CSS/JS
+5. ✅ `window.GOVUKFrontend` object exists in browser console
+
+### Pre-Development Checklist
+Before starting development, verify:
+- [ ] Node.js 16+ installed
+- [ ] `govuk-frontend` package installed
+- [ ] Express static middleware configured correctly
+- [ ] CSS/JS paths pointing to correct files
+- [ ] Template engine (EJS) configured
+- [ ] Error handling middleware in place
+
+### Post-Development Validation
+After implementing features, test:
+- [ ] **Visual Check**: GOV.UK styling applied correctly
+- [ ] **Console Check**: No 404 errors for assets in browser console
+- [ ] **Accessibility Check**: Skip link, keyboard navigation work
+- [ ] **Mobile Check**: Responsive design functions properly
+- [ ] **Form Check**: Validation and error handling work
+- [ ] **Performance Check**: Page loads under 2 seconds
+- [ ] **Cross-browser Check**: Works in Chrome, Firefox, Safari, Edge
+
+### Automated Testing Integration
+```javascript
+// Jest test example for GOV.UK components
+describe('GOV.UK Integration', () => {
+  test('should load GOV.UK Frontend styles', async () => {
+    const response = await request(app)
+      .get('/govuk-frontend/govuk/govuk-frontend.min.css')
+      .expect(200);
+    expect(response.headers['content-type']).toMatch(/css/);
+  });
+
+  test('should initialize GOV.UK components', async () => {
+    const response = await request(app)
+      .get('/')
+      .expect(200);
+    expect(response.text).toContain('window.GOVUKFrontend.initAll()');
+  });
+});
 ```
 
 ## Code Standards

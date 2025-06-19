@@ -6,21 +6,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0c0c">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="/govuk-frontend/assets/images/favicon.ico" type="image/x-icon">
-  <link rel="mask-icon" href="/govuk-frontend/assets/images/govuk-mask-icon.svg" color="#0b0c0c">
-  <link rel="apple-touch-icon" sizes="180x180" href="/govuk-frontend/assets/images/govuk-apple-touch-icon-180x180.png">
-  <link rel="apple-touch-icon" sizes="167x167" href="/govuk-frontend/assets/images/govuk-apple-touch-icon-167x167.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/govuk-frontend/assets/images/govuk-apple-touch-icon-152x152.png">
-  <link rel="apple-touch-icon" href="/govuk-frontend/assets/images/govuk-apple-touch-icon.png">
   
+  <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="/govuk-frontend/govuk/assets/images/favicon.ico" type="image/x-icon">
+  <link rel="mask-icon" href="/govuk-frontend/govuk/assets/images/govuk-mask-icon.svg" color="#0b0c0c">
+  <link rel="apple-touch-icon" sizes="180x180" href="/govuk-frontend/govuk/assets/images/govuk-apple-touch-icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/govuk-frontend/govuk/assets/images/govuk-apple-touch-icon-167x167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/govuk-frontend/govuk/assets/images/govuk-apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" href="/govuk-frontend/govuk/assets/images/govuk-apple-touch-icon.png">
+  
+  <!-- CSS - Using exact path from copilot-instructions.md -->
   <link href="/govuk-frontend/govuk/govuk-frontend.min.css" rel="stylesheet">
 </head>
 
 <body class="govuk-template__body">
+  <!-- JavaScript enablement script as per copilot-instructions.md -->
   <script>document.body.className = 'js-enabled' + ' ' + document.body.className;</script>
   
+  <!-- Skip link for accessibility -->
   <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
+  <!-- Header with crown logo and service name -->
   <header class="govuk-header" role="banner" data-module="govuk-header">
     <div class="govuk-header__container govuk-width-container">
       <div class="govuk-header__logo">
@@ -43,11 +48,13 @@
     </div>
   </header>
 
+  <!-- Main content container -->
   <div class="govuk-width-container">
     <main class="govuk-main-wrapper" id="main-content" role="main">
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
           
+          <!-- Error summary (if errors exist) - following copilot-instructions.md pattern -->
           <% if (errors && errors.length > 0) { %>
           <div class="govuk-error-summary" data-module="govuk-error-summary">
             <div role="alert">
@@ -69,44 +76,51 @@
 
           <h1 class="govuk-heading-l"><%= title %></h1>
           
-          <p class="govuk-body">Use this service to register an animal for a veterinary visit.</p>
+          <p class="govuk-body">Use this service to register animals for a veterinary visit.</p>
 
           <form class="form" action="/submit" method="post" novalidate>
             
-            <div class="govuk-form-group <%= errors && errors.find(e => e.path === 'animal-type') ? 'govuk-form-group--error' : '' %>">
+            <!-- Animal Species Selection using govuk-radios -->
+            <div class="govuk-form-group <%= errors && errors.find(e => e.path === 'animal-species') ? 'govuk-form-group--error' : '' %>">
               <fieldset class="govuk-fieldset">
                 <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
                   <h2 class="govuk-fieldset__heading">
-                    What type of animal is this?
+                    What species of animal do you want to register?
                   </h2>
                 </legend>
-                <% if (errors && errors.find(e => e.path === 'animal-type')) { %>
-                <p id="animal-type-error" class="govuk-error-message">
-                  <span class="govuk-visually-hidden">Error:</span> <%= errors.find(e => e.path === 'animal-type').msg %>
+                <% if (errors && errors.find(e => e.path === 'animal-species')) { %>
+                <p id="animal-species-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">Error:</span> <%= errors.find(e => e.path === 'animal-species').msg %>
                 </p>
                 <% } %>
                 <div class="govuk-radios" data-module="govuk-radios">
                   <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="animal-type" name="animal-type" type="radio" value="Cattle" <%= formData['animal-type'] === 'Cattle' ? 'checked' : '' %>>
-                    <label class="govuk-label govuk-radios__label" for="animal-type">
+                    <input class="govuk-radios__input" id="animal-species" name="animal-species" type="radio" value="Cattle" <%= formData['animal-species'] === 'Cattle' ? 'checked' : '' %>>
+                    <label class="govuk-label govuk-radios__label" for="animal-species">
                       Cattle
                     </label>
                   </div>
                   <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="animal-type-2" name="animal-type" type="radio" value="Sheep" <%= formData['animal-type'] === 'Sheep' ? 'checked' : '' %>>
-                    <label class="govuk-label govuk-radios__label" for="animal-type-2">
+                    <input class="govuk-radios__input" id="animal-species-2" name="animal-species" type="radio" value="Sheep" <%= formData['animal-species'] === 'Sheep' ? 'checked' : '' %>>
+                    <label class="govuk-label govuk-radios__label" for="animal-species-2">
                       Sheep
                     </label>
                   </div>
                   <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="animal-type-3" name="animal-type" type="radio" value="Pigs" <%= formData['animal-type'] === 'Pigs' ? 'checked' : '' %>>
-                    <label class="govuk-label govuk-radios__label" for="animal-type-3">
+                    <input class="govuk-radios__input" id="animal-species-3" name="animal-species" type="radio" value="Pigs" <%= formData['animal-species'] === 'Pigs' ? 'checked' : '' %>>
+                    <label class="govuk-label govuk-radios__label" for="animal-species-3">
                       Pigs
                     </label>
                   </div>
                   <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="animal-type-4" name="animal-type" type="radio" value="Other" <%= formData['animal-type'] === 'Other' ? 'checked' : '' %>>
-                    <label class="govuk-label govuk-radios__label" for="animal-type-4">
+                    <input class="govuk-radios__input" id="animal-species-4" name="animal-species" type="radio" value="Poultry" <%= formData['animal-species'] === 'Poultry' ? 'checked' : '' %>>
+                    <label class="govuk-label govuk-radios__label" for="animal-species-4">
+                      Poultry
+                    </label>
+                  </div>
+                  <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="animal-species-5" name="animal-species" type="radio" value="Other" <%= formData['animal-species'] === 'Other' ? 'checked' : '' %>>
+                    <label class="govuk-label govuk-radios__label" for="animal-species-5">
                       Other
                     </label>
                   </div>
@@ -114,23 +128,25 @@
               </fieldset>
             </div>
 
-            <div class="govuk-form-group <%= errors && errors.find(e => e.path === 'animal-id') ? 'govuk-form-group--error' : '' %>">
+            <!-- Animal Count using govuk-input -->
+            <div class="govuk-form-group <%= errors && errors.find(e => e.path === 'animal-count') ? 'govuk-form-group--error' : '' %>">
               <h2 class="govuk-label-wrapper">
-                <label class="govuk-label govuk-label--m" for="animal-id">
-                  Animal ID or ear tag number
+                <label class="govuk-label govuk-label--m" for="animal-count">
+                  How many animals do you want to register?
                 </label>
               </h2>
-              <div id="animal-id-hint" class="govuk-hint">
-                For example, UK123456789 or 12345
+              <div id="animal-count-hint" class="govuk-hint">
+                Enter the total number of animals for this species
               </div>
-              <% if (errors && errors.find(e => e.path === 'animal-id')) { %>
-              <p id="animal-id-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> <%= errors.find(e => e.path === 'animal-id').msg %>
+              <% if (errors && errors.find(e => e.path === 'animal-count')) { %>
+              <p id="animal-count-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> <%= errors.find(e => e.path === 'animal-count').msg %>
               </p>
               <% } %>
-              <input class="govuk-input <%= errors && errors.find(e => e.path === 'animal-id') ? 'govuk-input--error' : '' %>" id="animal-id" name="animal-id" type="text" aria-describedby="animal-id-hint <%= errors && errors.find(e => e.path === 'animal-id') ? 'animal-id-error' : '' %>" value="<%= formData['animal-id'] || '' %>">
+              <input class="govuk-input govuk-input--width-10 <%= errors && errors.find(e => e.path === 'animal-count') ? 'govuk-input--error' : '' %>" id="animal-count" name="animal-count" type="text" inputmode="numeric" aria-describedby="animal-count-hint <%= errors && errors.find(e => e.path === 'animal-count') ? 'animal-count-error' : '' %>" value="<%= formData['animal-count'] || '' %>">
             </div>
 
+            <!-- Farm Postcode using govuk-input -->
             <div class="govuk-form-group <%= errors && errors.find(e => e.path === 'farm-postcode') ? 'govuk-form-group--error' : '' %>">
               <h2 class="govuk-label-wrapper">
                 <label class="govuk-label govuk-label--m" for="farm-postcode">
@@ -148,53 +164,7 @@
               <input class="govuk-input govuk-input--width-10 <%= errors && errors.find(e => e.path === 'farm-postcode') ? 'govuk-input--error' : '' %>" id="farm-postcode" name="farm-postcode" type="text" aria-describedby="farm-postcode-hint <%= errors && errors.find(e => e.path === 'farm-postcode') ? 'farm-postcode-error' : '' %>" value="<%= formData['farm-postcode'] || '' %>">
             </div>
 
-            <div class="govuk-form-group <%= errors && (errors.find(e => e.path === 'visit-date-day') || errors.find(e => e.path === 'visit-date-month') || errors.find(e => e.path === 'visit-date-year')) ? 'govuk-form-group--error' : '' %>">
-              <fieldset class="govuk-fieldset" role="group" aria-describedby="visit-date-hint">
-                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-                  <h2 class="govuk-fieldset__heading">
-                    When do you need the vet visit?
-                  </h2>
-                </legend>
-                <div id="visit-date-hint" class="govuk-hint">
-                  For example, 27 3 2024
-                </div>
-                <% if (errors && (errors.find(e => e.path === 'visit-date-day') || errors.find(e => e.path === 'visit-date-month') || errors.find(e => e.path === 'visit-date-year'))) { %>
-                <p id="visit-date-error" class="govuk-error-message">
-                  <span class="govuk-visually-hidden">Error:</span>
-                  <% if (errors.find(e => e.path === 'visit-date-day')) { %><%= errors.find(e => e.path === 'visit-date-day').msg %><% } %>
-                  <% if (errors.find(e => e.path === 'visit-date-month')) { %><%= errors.find(e => e.path === 'visit-date-month').msg %><% } %>
-                  <% if (errors.find(e => e.path === 'visit-date-year')) { %><%= errors.find(e => e.path === 'visit-date-year').msg %><% } %>
-                </p>
-                <% } %>
-                <div class="govuk-date-input" id="visit-date">
-                  <div class="govuk-date-input__item">
-                    <div class="govuk-form-group">
-                      <label class="govuk-label govuk-date-input__label" for="visit-date-day">
-                        Day
-                      </label>
-                      <input class="govuk-input govuk-date-input__input govuk-input--width-2 <%= errors && errors.find(e => e.path === 'visit-date-day') ? 'govuk-input--error' : '' %>" id="visit-date-day" name="visit-date-day" type="text" inputmode="numeric" value="<%= formData['visit-date-day'] || '' %>">
-                    </div>
-                  </div>
-                  <div class="govuk-date-input__item">
-                    <div class="govuk-form-group">
-                      <label class="govuk-label govuk-date-input__label" for="visit-date-month">
-                        Month
-                      </label>
-                      <input class="govuk-input govuk-date-input__input govuk-input--width-2 <%= errors && errors.find(e => e.path === 'visit-date-month') ? 'govuk-input--error' : '' %>" id="visit-date-month" name="visit-date-month" type="text" inputmode="numeric" value="<%= formData['visit-date-month'] || '' %>">
-                    </div>
-                  </div>
-                  <div class="govuk-date-input__item">
-                    <div class="govuk-form-group">
-                      <label class="govuk-label govuk-date-input__label" for="visit-date-year">
-                        Year
-                      </label>
-                      <input class="govuk-input govuk-date-input__input govuk-input--width-4 <%= errors && errors.find(e => e.path === 'visit-date-year') ? 'govuk-input--error' : '' %>" id="visit-date-year" name="visit-date-year" type="text" inputmode="numeric" value="<%= formData['visit-date-year'] || '' %>">
-                    </div>
-                  </div>
-                </div>
-              </fieldset>
-            </div>
-
+            <!-- Contact Phone using govuk-input -->
             <div class="govuk-form-group <%= errors && errors.find(e => e.path === 'contact-phone') ? 'govuk-form-group--error' : '' %>">
               <h2 class="govuk-label-wrapper">
                 <label class="govuk-label govuk-label--m" for="contact-phone">
@@ -212,8 +182,9 @@
               <input class="govuk-input govuk-input--width-20 <%= errors && errors.find(e => e.path === 'contact-phone') ? 'govuk-input--error' : '' %>" id="contact-phone" name="contact-phone" type="tel" aria-describedby="contact-phone-hint <%= errors && errors.find(e => e.path === 'contact-phone') ? 'contact-phone-error' : '' %>" value="<%= formData['contact-phone'] || '' %>">
             </div>
 
+            <!-- Submit button using govuk-button -->
             <button type="submit" class="govuk-button" data-module="govuk-button">
-              Register animal for vet visit
+              Register animals for vet visit
             </button>
 
           </form>
@@ -223,6 +194,7 @@
     </main>
   </div>
 
+  <!-- Footer with standard government links -->
   <footer class="govuk-footer" role="contentinfo">
     <div class="govuk-width-container">
       <div class="govuk-footer__meta">
@@ -274,6 +246,8 @@
       </div>
     </div>
   </footer>
+
+  <!-- JavaScript - Using exact path from copilot-instructions.md -->
   <script src="/govuk-frontend/govuk/govuk-frontend.min.js"></script>
   <script>
     window.GOVUKFrontend.initAll()
