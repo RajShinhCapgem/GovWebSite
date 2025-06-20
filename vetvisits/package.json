@@ -1,7 +1,7 @@
 {
   "name": "vetvisits",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
@@ -9,10 +9,10 @@
     "test:accessibility": "@axe-core/cli http://localhost:3000",
     "test:unit": "jest"
   },
-  "keywords": [],
+  "keywords": ["govuk", "farming", "veterinary"],
   "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
+  "description": "GOV.UK service for farmers to register animals for vet visits",
   "dependencies": {
     "body-parser": "^1.20.3",
     "ejs": "^3.1.10",
