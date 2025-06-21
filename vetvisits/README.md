@@ -1,167 +1,166 @@
-# Vetvisits - Register Animals for Vet Visits
+# Vet Visits - Animal Registration Service
 
-A GOV.UK Design System compliant Node.js Express application for farmers to register animals for vet visits.
+A GOV.UK Design System compliant Node.js Express application for farmers to register animals for veterinary visits.
 
 ## Features
 
-- **Species Selection**: Choose from cattle, sheep, pigs, poultry, goats, or horses
-- **Animal Count Entry**: Enter specific numbers for subcategories (e.g., ewes, rams, lambs for sheep)
-- **Form Validation**: Server-side validation with clear error messages
-- **Confirmation**: Summary page showing registered animals
-- **Accessibility**: WCAG 2.1 Level AA compliant
-- **GOV.UK Design System**: Full compliance with government service standards
+- GOV.UK Design System compliant interface
+- Multi-step form for animal registration
+- Species selection with checkboxes
+- Animal count input by subcategories
+- Form validation and error handling
+- Session management
+- Confirmation page with summary
+- Responsive design
+- Accessibility features
 
-## Animal Categories Supported
+## Animal Categories
+
+The application supports registration for:
 
 ### Cattle
-- Dairy cows, Beef cattle, Bulls, Calves
+- Dairy cows
+- Beef cattle  
+- Bulls
+- Calves
 
-### Sheep  
-- Ewes, Rams, Lambs, Wethers
+### Sheep
+- Ewes
+- Rams
+- Lambs
+- Wethers
 
 ### Pigs
-- Sows, Boars, Piglets, Gilts
+- Breeding sows
+- Boars
+- Piglets
+- Finishing pigs
 
 ### Poultry
-- Laying hens, Broilers, Roosters, Chicks
-
-### Goats
-- Does, Bucks, Kids, Wethers
-
-### Horses
-- Mares, Stallions, Geldings, Foals
+- Laying hens
+- Broiler chickens
+- Ducks
+- Geese
+- Turkeys
 
 ## Installation
 
-### Prerequisites
-- Node.js 16.x or higher (18.x+ recommended)
-- npm 8.x or higher
-
-### Setup
-
-1. **Clone/Download the project**
+1. Clone or download the project
+2. Navigate to the project directory:
    ```bash
    cd vetvisits
    ```
-
-2. **Install dependencies**
+3. Install dependencies:
    ```bash
    npm install
    ```
 
-3. **Verify GOV.UK Frontend assets**
-   ```bash
-   # Check required files exist
-   dir node_modules\govuk-frontend\dist\govuk\govuk-frontend.min.css
-   dir node_modules\govuk-frontend\dist\govuk\govuk-frontend.min.js
-   ```
+## Running the Application
 
-4. **Start the application**
-   ```bash
-   npm start
-   ```
-
-5. **Access the application**
-   Open http://localhost:3000 in your browser
-
-## Development
-
-### Development server with auto-restart
+### Development Mode
 ```bash
 npm run dev
 ```
+This will start the application with automatic reloading when files change.
 
-### Testing
+### Production Mode
 ```bash
-# Run all tests
-npm test
-
-# Accessibility testing
-npm run test:accessibility
-
-# Unit tests
-npm run test:unit
+npm start
 ```
+
+The application will be available at `http://localhost:3000`
 
 ## Project Structure
 
 ```
 vetvisits/
-├── app.js                 # Main Express application
-├── package.json           # Dependencies and scripts
-├── package-lock.json      # Dependency lock file
-├── .env                   # Environment variables
-├── .gitignore            # Git ignore rules
-├── views/                # EJS templates
-│   ├── species-selection.ejs    # Animal species selection page
-│   ├── animal-count.ejs         # Animal count entry page
-│   ├── confirmation.ejs         # Registration confirmation
-│   └── includes/               # Reusable components
-│       └── layout.ejs          # Base template layout
-├── public/               # Static assets (empty - using GOV.UK assets)
-└── node_modules/         # Dependencies
-    └── govuk-frontend/   # GOV.UK Frontend package
+├── app.js                 # Main application file
+├── package.json          # Dependencies and scripts
+├── views/                # Nunjucks templates
+│   ├── layout.njk        # Base layout template
+│   ├── index.njk         # Start page
+│   ├── species-selection.njk # Species selection form
+│   ├── animal-counts.njk # Animal count input form
+│   └── confirmation.njk  # Confirmation page
+├── public/               # Static assets
+│   └── css/
+│       ├── govuk-frontend.min.css # GOV.UK Frontend styles
+│       └── application.css        # Custom styles
+└── README.md
 ```
 
-## Key Dependencies
+## User Journey
 
-- **express**: Web application framework
-- **ejs**: Templating engine
-- **govuk-frontend**: Official GOV.UK Design System components
-- **body-parser**: Form data parsing
-- **express-validator**: Server-side form validation
+1. **Start Page** (`/`) - Introduction and service overview
+2. **Species Selection** (`/species-selection`) - Select animal species using checkboxes
+3. **Animal Counts** (`/animal-counts`) - Enter counts for each animal subcategory
+4. **Confirmation** (`/confirmation`) - Review and confirm registration
 
-## Design Standards
+## Technical Details
 
-This application follows the GOV.UK Design System:
+- **Framework**: Express.js
+- **Template Engine**: Nunjucks
+- **Design System**: GOV.UK Frontend v5.7.0
+- **Session Management**: express-session
+- **Form Handling**: body-parser
+- **Validation**: Server-side validation with error display
 
-- **Accessibility**: WCAG 2.1 Level AA compliant
-- **Typography**: GOV.UK Transport font
-- **Colors**: Government approved color palette
-- **Components**: Official GOV.UK Frontend components
-- **Patterns**: Government service design patterns
-- **One question per page**: Follows GDS pattern for complex forms
+## Common Development Issues
+
+### Nunjucks Filter Syntax
+**Issue**: Using Python-style method calls instead of Nunjucks filters
+```
+❌ Incorrect: {{ variable.lower() }}
+✅ Correct:   {{ variable | lower }}
+```
+
+**Fixed locations**:
+- `views/animal-counts.njk` line 44: `{{ subcategory.name | lower }}`
+- `views/confirmation.njk` line 35: `{{ species.name | lower }}`
+
+**Remember**: Nunjucks uses pipe (`|`) syntax for filters, not method calls with parentheses.
+
+## Accessibility
+
+The application follows GOV.UK Design System accessibility standards:
+- WCAG 2.1 AA compliance
+- Keyboard navigation support
+- Screen reader compatibility
+- Error message association
+- Proper form labeling
+- Focus management
 
 ## Browser Support
 
-Supports all modern browsers as per GOV.UK Frontend compatibility:
-- Internet Explorer 11+
-- Edge (all versions)
-- Chrome (all versions)
-- Firefox (all versions)
-- Safari 9+
+Supports all modern browsers as per GOV.UK Frontend requirements:
+- Chrome 55+
+- Firefox 45+
+- Safari 12+
+- Edge 79+
+- Internet Explorer 11
 
-## Government Design Principles
+## Development
 
-This service follows the Government Design Principles:
-- Start with user needs
-- Do less - focus on essential features
-- Design with data and user research
-- Do the hard work to make it simple
-- Iterate based on user feedback
-- Make things open and accessible
-- Understand context and constraints
-- Build digital services, not websites
-- Be consistent, not uniform
-- Make things accessible and inclusive
+The application uses:
+- Nunjucks for server-side templating
+- GOV.UK Frontend components and patterns
+- Express sessions for multi-step form data
+- Comprehensive form validation
+- Error handling and user feedback
+
+## Customization
+
+To modify animal categories, update the `animalData` object in `app.js`. The structure should maintain the same format with species and subcategories.
+
+## Production Deployment
+
+Before deploying to production:
+1. Set `NODE_ENV=production`
+2. Configure proper session secrets
+3. Enable HTTPS and set secure cookies
+4. Set up proper error logging
+5. Configure security headers
 
 ## License
 
-MIT License - This project is open source and free to use.
-
-## Support
-
-For issues or questions:
-1. Check the browser console for JavaScript errors
-2. Ensure GOV.UK Frontend assets are loading correctly
-3. Verify form validation is working as expected
-4. Test accessibility with screen readers
-
-## Contributing
-
-When making changes:
-1. Follow GOV.UK Design System guidelines
-2. Test accessibility compliance
-3. Ensure mobile-first responsive design
-4. Validate all forms server-side
-5. Use semantic HTML structure
+This project is licensed under the MIT License.

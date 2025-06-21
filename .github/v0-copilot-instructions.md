@@ -1,3 +1,5 @@
+IMPORTANT: Use Context7 constantly (govuk-design-system) to ensure you get the correct libraries, styles, codes and whatever else you need alongside the information in this document. 
+
 # GOV.UK Design System - Development Instructions
 
 ## Overview

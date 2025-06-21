@@ -1,149 +1,228 @@
 const express = require('express');
-const path = require('path');
+const nunjucks = require('nunjucks');
 const bodyParser = require('body-parser');
-const { body, validationResult } = require('express-validator');
+const session = require('express-session');
+const path = require('path');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// CRITICAL ORDER - DO NOT CHANGE
-// 1. Body parser FIRST
+// Configure Nunjucks
+nunjucks.configure('views', {
+  autoescape: true,
+  express: app,
+  watch: true
+});
+
+// Set view engine
+app.set('view engine', 'njk');
+
+// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-// 2. Static files (public folder)
-app.use(express.static('public'));
+// Session configuration
+app.use(session({
+  secret: 'vetvisits-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set to true in production with HTTPS
+}));
 
-// 3. GOV.UK Frontend assets - EXACT PATH
-app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist')));
-
-// 4. Template engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+// Serve static files from GOV.UK Frontend
+app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk/assets')));
+app.use('/js', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk')));
+app.use('/css', express.static(path.join(__dirname, 'public/css')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Animal species data with subcategories
-const animalSpecies = {
+const animalData = {
   cattle: {
     name: 'Cattle',
-    subcategories: ['Dairy cows', 'Beef cattle', 'Bulls', 'Calves']
+    subcategories: [
+      { id: 'dairy-cows', name: 'Dairy cows' },
+      { id: 'beef-cattle', name: 'Beef cattle' },
+      { id: 'bulls', name: 'Bulls' },
+      { id: 'calves', name: 'Calves' }
+    ]
   },
   sheep: {
     name: 'Sheep',
-    subcategories: ['Ewes', 'Rams', 'Lambs', 'Wethers']
+    subcategories: [
+      { id: 'ewes', name: 'Ewes' },
+      { id: 'rams', name: 'Rams' },
+      { id: 'lambs', name: 'Lambs' },
+      { id: 'wethers', name: 'Wethers' }
+    ]
   },
   pigs: {
     name: 'Pigs',
-    subcategories: ['Sows', 'Boars', 'Piglets', 'Gilts']
+    subcategories: [
+      { id: 'breeding-sows', name: 'Breeding sows' },
+      { id: 'boars', name: 'Boars' },
+      { id: 'piglets', name: 'Piglets' },
+      { id: 'finishing-pigs', name: 'Finishing pigs' }
+    ]
   },
   poultry: {
     name: 'Poultry',
-    subcategories: ['Laying hens', 'Broilers', 'Roosters', 'Chicks']
-  },
-  goats: {
-    name: 'Goats',
-    subcategories: ['Does', 'Bucks', 'Kids', 'Wethers']
-  },
-  horses: {
-    name: 'Horses',
-    subcategories: ['Mares', 'Stallions', 'Geldings', 'Foals']
+    subcategories: [
+      { id: 'laying-hens', name: 'Laying hens' },
+      { id: 'broiler-chickens', name: 'Broiler chickens' },
+      { id: 'ducks', name: 'Ducks' },
+      { id: 'geese', name: 'Geese' },
+      { id: 'turkeys', name: 'Turkeys' }
+    ]
   }
 };
 
 // Routes
 app.get('/', (req, res) => {
-  res.render('species-selection', { 
-    title: 'Select animal species',
-    errors: null,
-    formData: {},
-    animalSpecies: animalSpecies
+  res.render('index', {
+    serviceName: 'Register animals for vet visits',
+    pageTitle: 'Register animals for vet visits'
   });
 });
 
-app.post('/species', [
-  body('species').notEmpty().withMessage('Select which animals you have')
-], (req, res) => {
-  const errors = validationResult(req);
+app.get('/species-selection', (req, res) => {
+  res.render('species-selection', {
+    serviceName: 'Register animals for vet visits',
+    pageTitle: 'What species do you have?',
+    animalData: animalData,
+    errors: req.session.errors,
+    formData: req.session.formData
+  });
   
-  if (!errors.isEmpty()) {
-    return res.render('species-selection', {
-      title: 'Select animal species',
-      errors: errors.array(),
-      formData: req.body,
-      animalSpecies: animalSpecies
-    });
-  }
+  // Clear session errors and form data after displaying
+  delete req.session.errors;
+  delete req.session.formData;
+});
 
+app.post('/species-selection', (req, res) => {
   const selectedSpecies = req.body.species;
-  const speciesData = animalSpecies[selectedSpecies];
   
-  if (!speciesData) {
-    return res.render('species-selection', {
-      title: 'Select animal species',
-      errors: [{ path: 'species', msg: 'Please select a valid animal species' }],
-      formData: req.body,
-      animalSpecies: animalSpecies
-    });
+  if (!selectedSpecies || selectedSpecies.length === 0) {
+    req.session.errors = {
+      species: {
+        text: 'Select at least one species'
+      }
+    };
+    req.session.formData = req.body;
+    return res.redirect('/species-selection');
   }
-
-  res.render('animal-count', {
-    title: `Add your ${speciesData.name.toLowerCase()} numbers`,
-    errors: null,
-    formData: {},
-    selectedSpecies: selectedSpecies,
-    speciesData: speciesData
-  });
-});
-
-app.post('/submit', (req, res) => {
-  const selectedSpecies = req.body.selectedSpecies;
-  const speciesData = animalSpecies[selectedSpecies];
   
-  // Build validation rules dynamically
-  const validationRules = speciesData.subcategories.map(subcategory => {
-    const fieldName = subcategory.toLowerCase().replace(/\s+/g, '-');
-    return body(fieldName)
-      .isInt({ min: 0 })
-      .withMessage(`Enter a number 0 or above for ${subcategory.toLowerCase()}`);
-  });
-
-  // Run validation
-  Promise.all(validationRules.map(rule => rule.run(req))).then(() => {
-    const errors = validationResult(req);
-    
-    if (!errors.isEmpty()) {
-      return res.render('animal-count', {
-        title: `Add your ${speciesData.name.toLowerCase()} numbers`,
-        errors: errors.array(),
-        formData: req.body,
-        selectedSpecies: selectedSpecies,
-        speciesData: speciesData
-      });
-    }
-
-    // Calculate totals
-    const animalCounts = {};
-    let totalAnimals = 0;
-    
-    speciesData.subcategories.forEach(subcategory => {
-      const fieldName = subcategory.toLowerCase().replace(/\s+/g, '-');
-      const count = parseInt(req.body[fieldName]) || 0;
-      animalCounts[subcategory] = count;
-      totalAnimals += count;
-    });
-
-    res.render('confirmation', {
-      title: 'Registration complete',
-      selectedSpecies: selectedSpecies,
-      speciesData: speciesData,
-      animalCounts: animalCounts,
-      totalAnimals: totalAnimals
-    });
-  });
+  // Store selected species in session
+  req.session.selectedSpecies = Array.isArray(selectedSpecies) ? selectedSpecies : [selectedSpecies];
+  res.redirect('/animal-counts');
 });
 
+app.get('/animal-counts', (req, res) => {
+  const selectedSpecies = req.session.selectedSpecies;
+  
+  if (!selectedSpecies || selectedSpecies.length === 0) {
+    return res.redirect('/species-selection');
+  }
+  
+  // Build form data for selected species
+  const speciesData = selectedSpecies.map(speciesId => ({
+    id: speciesId,
+    ...animalData[speciesId]
+  }));
+  
+  res.render('animal-counts', {
+    serviceName: 'Register animals for vet visits',
+    pageTitle: 'How many animals do you have?',
+    speciesData: speciesData,
+    errors: req.session.errors,
+    formData: req.session.formData
+  });
+  
+  // Clear session errors and form data after displaying
+  delete req.session.errors;
+  delete req.session.formData;
+});
+
+app.post('/animal-counts', (req, res) => {
+  const selectedSpecies = req.session.selectedSpecies;
+  const errors = {};
+  let hasErrors = false;
+  
+  // Validate that all subcategories have valid counts
+  selectedSpecies.forEach(speciesId => {
+    const species = animalData[speciesId];
+    species.subcategories.forEach(subcategory => {
+      const count = req.body[subcategory.id];
+      if (!count || count === '' || isNaN(count) || parseInt(count) < 0) {
+        errors[subcategory.id] = {
+          text: `Enter the number of ${subcategory.name.toLowerCase()}`
+        };
+        hasErrors = true;
+      } else if (parseInt(count) === 0) {
+        errors[subcategory.id] = {
+          text: `Number of ${subcategory.name.toLowerCase()} must be greater than 0`
+        };
+        hasErrors = true;
+      }
+    });
+  });
+  
+  if (hasErrors) {
+    req.session.errors = errors;
+    req.session.formData = req.body;
+    return res.redirect('/animal-counts');
+  }
+  
+  // Store animal counts in session
+  req.session.animalCounts = req.body;
+  res.redirect('/confirmation');
+});
+
+app.get('/confirmation', (req, res) => {
+  const selectedSpecies = req.session.selectedSpecies;
+  const animalCounts = req.session.animalCounts;
+  
+  if (!selectedSpecies || !animalCounts) {
+    return res.redirect('/species-selection');
+  }
+  
+  // Build confirmation data
+  const confirmationData = selectedSpecies.map(speciesId => {
+    const species = animalData[speciesId];
+    const subcategoriesWithCounts = species.subcategories.map(subcategory => ({
+      ...subcategory,
+      count: animalCounts[subcategory.id]
+    }));
+    
+    const totalCount = subcategoriesWithCounts.reduce((sum, sub) => sum + parseInt(sub.count), 0);
+    
+    return {
+      id: speciesId,
+      name: species.name,
+      subcategories: subcategoriesWithCounts,
+      totalCount: totalCount
+    };
+  });
+  
+  res.render('confirmation', {
+    serviceName: 'Register animals for vet visits',
+    pageTitle: 'Registration complete',
+    confirmationData: confirmationData
+  });
+  
+  // Clear session data after confirmation
+  delete req.session.selectedSpecies;
+  delete req.session.animalCounts;
+});
+
+// Start again route
 app.get('/start-again', (req, res) => {
-  res.redirect('/');
+  // Clear all session data
+  req.session.destroy(() => {
+    res.redirect('/');
+  });
 });
 
-const PORT = process.env.PORT || 3000;
+// Start server
 app.listen(PORT, () => {
-  console.log(`Vet visits app running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
