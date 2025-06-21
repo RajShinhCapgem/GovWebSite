@@ -1,166 +1,132 @@
 # Vet Visits - Animal Registration Service
 
-A GOV.UK Design System compliant Node.js Express application for farmers to register animals for veterinary visits.
+A GOV.UK compliant web application for farmers to register animals for veterinary visits, built with Node.js, Express, and the GOV.UK Design System.
 
 ## Features
 
-- GOV.UK Design System compliant interface
-- Multi-step form for animal registration
-- Species selection with checkboxes
-- Animal count input by subcategories
-- Form validation and error handling
-- Session management
-- Confirmation page with summary
-- Responsive design
-- Accessibility features
+- **Start Page**: Introduction to the service with clear call-to-action
+- **Species Selection**: Multi-select form for choosing animal types
+- **Animal Counts**: Dynamic form for entering animal counts by subcategory
+- **Check Answers**: Summary page for reviewing information
+- **Confirmation**: Success page with reference number
 
-## Animal Categories
+## Technology Stack
 
-The application supports registration for:
+- **Backend**: Node.js with Express.js
+- **Templating**: Nunjucks
+- **Frontend**: GOV.UK Frontend v5.10.0+
+- **Styling**: GOV.UK Design System components and patterns
 
-### Cattle
-- Dairy cows
-- Beef cattle  
-- Bulls
-- Calves
+## GOV.UK Design System Compliance
 
-### Sheep
-- Ewes
-- Rams
-- Lambs
-- Wethers
+This application strictly follows GOV.UK Design System standards:
 
-### Pigs
-- Breeding sows
-- Boars
-- Piglets
-- Finishing pigs
-
-### Poultry
-- Laying hens
-- Broiler chickens
-- Ducks
-- Geese
-- Turkeys
+- ✅ Uses official GOV.UK Frontend components
+- ✅ Implements proper accessibility standards (WCAG 2.2 AA)
+- ✅ Follows GOV.UK form patterns and validation
+- ✅ Uses semantic HTML and proper ARIA attributes
+- ✅ Implements error handling and summary patterns
+- ✅ Mobile-responsive design
+- ✅ Progressive enhancement approach
 
 ## Installation
 
-1. Clone or download the project
-2. Navigate to the project directory:
-   ```bash
+1. **Clone or navigate to the project directory**
+   ```powershell
    cd vetvisits
    ```
-3. Install dependencies:
-   ```bash
+
+2. **Install dependencies**
+   ```powershell
    npm install
    ```
 
-## Running the Application
+3. **Start the application**
+   ```powershell
+   npm start
+   ```
+   
+   Or for development with auto-restart:
+   ```powershell
+   npm run dev
+   ```
 
-### Development Mode
-```bash
-npm run dev
-```
-This will start the application with automatic reloading when files change.
-
-### Production Mode
-```bash
-npm start
-```
-
-The application will be available at `http://localhost:3000`
+4. **Open your browser**
+   Navigate to `http://localhost:3000`
 
 ## Project Structure
 
 ```
 vetvisits/
-├── app.js                 # Main application file
-├── package.json          # Dependencies and scripts
-├── views/                # Nunjucks templates
-│   ├── layout.njk        # Base layout template
-│   ├── index.njk         # Start page
-│   ├── species-selection.njk # Species selection form
-│   ├── animal-counts.njk # Animal count input form
-│   └── confirmation.njk  # Confirmation page
-├── public/               # Static assets
-│   └── css/
-│       ├── govuk-frontend.min.css # GOV.UK Frontend styles
-│       └── application.css        # Custom styles
-└── README.md
+├── app.js              # Main Express application
+├── package.json        # Dependencies and scripts
+├── views/              # Nunjucks templates
+│   ├── base.html       # Base template with GOV.UK layout
+│   ├── start.html      # Service start page
+│   ├── species-selection.html  # Animal species selection
+│   ├── animal-counts.html      # Animal count input
+│   ├── check-answers.html      # Review page
+│   ├── confirmation.html       # Success confirmation
+│   └── error.html      # Error page template
+└── public/             # Static assets (if any)
 ```
+
+## Animal Species Supported
+
+The application supports registration for:
+
+- **Cattle**: Dairy cows, Beef cattle, Bulls, Calves
+- **Sheep**: Ewes, Rams, Lambs, Wethers  
+- **Pigs**: Sows, Boars, Piglets, Finishing pigs
+- **Poultry**: Laying hens, Broiler chickens, Ducks, Geese, Turkeys
+- **Horses**: Mares, Stallions, Geldings, Foals
 
 ## User Journey
 
-1. **Start Page** (`/`) - Introduction and service overview
-2. **Species Selection** (`/species-selection`) - Select animal species using checkboxes
-3. **Animal Counts** (`/animal-counts`) - Enter counts for each animal subcategory
-4. **Confirmation** (`/confirmation`) - Review and confirm registration
+1. **Start**: User lands on service start page
+2. **Species Selection**: Select animal types using checkboxes
+3. **Animal Counts**: Enter specific counts for each subcategory
+4. **Check Answers**: Review all information with change links
+5. **Confirmation**: Receive reference number and next steps
 
-## Technical Details
+## Validation
 
-- **Framework**: Express.js
-- **Template Engine**: Nunjucks
-- **Design System**: GOV.UK Frontend v5.7.0
-- **Session Management**: express-session
-- **Form Handling**: body-parser
-- **Validation**: Server-side validation with error display
+- Species selection is required
+- Animal counts must be positive whole numbers
+- Maximum count per animal type: 999,999
+- Client-side input patterns and server-side validation
+- Accessible error messages with error summary
 
-## Common Development Issues
+## Accessibility Features
 
-### Nunjucks Filter Syntax
-**Issue**: Using Python-style method calls instead of Nunjucks filters
-```
-❌ Incorrect: {{ variable.lower() }}
-✅ Correct:   {{ variable | lower }}
-```
-
-**Fixed locations**:
-- `views/animal-counts.njk` line 44: `{{ subcategory.name | lower }}`
-- `views/confirmation.njk` line 35: `{{ species.name | lower }}`
-
-**Remember**: Nunjucks uses pipe (`|`) syntax for filters, not method calls with parentheses.
-
-## Accessibility
-
-The application follows GOV.UK Design System accessibility standards:
-- WCAG 2.1 AA compliance
+- Skip to main content link
+- Proper heading hierarchy
+- Form labels and fieldsets
+- Error message association with ARIA
+- Screen reader compatible
 - Keyboard navigation support
-- Screen reader compatibility
-- Error message association
-- Proper form labeling
-- Focus management
+- High contrast compliance
 
-## Browser Support
+## Development Notes
 
-Supports all modern browsers as per GOV.UK Frontend requirements:
-- Chrome 55+
-- Firefox 45+
-- Safari 12+
-- Edge 79+
-- Internet Explorer 11
+- Session data is stored in memory (use proper session storage in production)
+- Reference numbers are generated using timestamp + random string
+- All GOV.UK Frontend assets are properly configured
+- Error handling includes both validation and 404 pages
+- Templates use Nunjucks filters for proper string manipulation
 
-## Development
+## Production Considerations
 
-The application uses:
-- Nunjucks for server-side templating
-- GOV.UK Frontend components and patterns
-- Express sessions for multi-step form data
-- Comprehensive form validation
-- Error handling and user feedback
+For production deployment:
 
-## Customization
-
-To modify animal categories, update the `animalData` object in `app.js`. The structure should maintain the same format with species and subcategories.
-
-## Production Deployment
-
-Before deploying to production:
-1. Set `NODE_ENV=production`
-2. Configure proper session secrets
-3. Enable HTTPS and set secure cookies
-4. Set up proper error logging
-5. Configure security headers
+1. Use a proper session store (Redis, database)
+2. Add database for persistent storage
+3. Implement proper logging
+4. Add rate limiting and security headers
+5. Set up SSL/HTTPS
+6. Configure environment variables
+7. Add monitoring and health checks
 
 ## License
 
-This project is licensed under the MIT License.
+MIT License - This is a demonstration application following GOV.UK Design System guidelines.

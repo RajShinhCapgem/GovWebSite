@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }} - GOV.UK{% endblock %}
+
+{% block beforeContent %}
+<div class="govuk-phase-banner">
+    <p class="govuk-phase-banner__content">
+        <strong class="govuk-tag govuk-phase-banner__content__tag">
+            Beta
+        </strong>
+        <span class="govuk-phase-banner__text">
+            This is a new service – your <a class="govuk-link" href="#">feedback</a> will help us to improve it.
+        </span>
+    </p>
+</div>
+<a href="/species/{{ sessionId }}" class="govuk-back-link">Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        {% if errors %}
+        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
+            <h2 class="govuk-error-summary__title" id="error-summary-title">
+                There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+                    {% for fieldName, errorMessage in errors %}
+                    <li>
+                        <a href="#{{ fieldName }}">{{ errorMessage }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+        
+        <p class="govuk-body">Enter the number of animals you have for each category.</p>
+
+        <form class="form" action="/animal-counts/{{ sessionId }}" method="post" novalidate>
+            {% for species in selectedSpecies %}
+                <h2 class="govuk-heading-m">{{ species.name }}</h2>
+                
+                {% for subcategory in species.subcategories %}
+                <div class="govuk-form-group{% if errors[subcategory.fieldName] %} govuk-form-group--error{% endif %}">
+                    <label class="govuk-label" for="{{ subcategory.fieldName }}">
+                        Number of {{ subcategory.name | lower }}
+                    </label>
+                    {% if errors[subcategory.fieldName] %}
+                    <p id="{{ subcategory.fieldName }}-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span>
+                        {{ errors[subcategory.fieldName] }}
+                    </p>
+                    {% endif %}
+                    <input class="govuk-input govuk-input--width-10{% if errors[subcategory.fieldName] %} govuk-input--error{% endif %}" 
+                           id="{{ subcategory.fieldName }}" 
+                           name="{{ subcategory.fieldName }}" 
+                           type="text" 
+                           inputmode="numeric" 
+                           pattern="[0-9]*"
+                           value="{{ subcategory.currentValue }}"
+                           {% if errors[subcategory.fieldName] %}aria-describedby="{{ subcategory.fieldName }}-error"{% endif %}>
+                </div>
+                {% endfor %}
+                
+                {% if not loop.last %}
+                <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+                {% endif %}
+            {% endfor %}
+
+            <button class="govuk-button" data-module="govuk-button">
+                Continue
+            </button>
+        </form>
+    </div>
+    
+    <div class="govuk-grid-column-one-third">
+        <div class="app-step-nav-related app-step-nav-related--singular">
+            <h2 class="app-step-nav-related__heading">
+                <span class="app-step-nav-related__pretitle">Help with</span>
+                <a href="#" class="app-step-nav-related__link">
+                    Counting your animals
+                </a>
+            </h2>
+            <div class="govuk-inset-text">
+                Count all animals that are currently on your premises, including any animals that are temporarily away for breeding or veterinary treatment.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

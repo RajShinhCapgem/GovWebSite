@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }} - GOV.UK{% endblock %}
+
+{% block beforeContent %}
+<div class="govuk-phase-banner">
+    <p class="govuk-phase-banner__content">
+        <strong class="govuk-tag govuk-phase-banner__content__tag">
+            Beta
+        </strong>
+        <span class="govuk-phase-banner__text">
+            This is a new service – your <a class="govuk-link" href="#">feedback</a> will help us to improve it.
+        </span>
+    </p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">{{ pageTitle }}</h1>
+            <div class="govuk-panel__body">
+                Your reference number<br><strong>{{ referenceNumber }}</strong>
+            </div>
+        </div>
+
+        <p class="govuk-body">We have sent you a confirmation email.</p>
+
+        <h2 class="govuk-heading-m">What happens next</h2>
+        
+        <p class="govuk-body">Your animal registration has been successfully submitted. You can expect:</p>
+        
+        <ul class="govuk-list govuk-list--bullet">
+            <li>a confirmation email within 24 hours</li>
+            <li>further communication about upcoming veterinary visits</li>
+            <li>updates on any health monitoring requirements for your animals</li>
+        </ul>
+
+        <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+                <span class="govuk-visually-hidden">Warning</span>
+                Keep your reference number {{ referenceNumber }} safe. You will need it for any future correspondence about this registration.
+            </strong>
+        </div>
+        
+        <h2 class="govuk-heading-m">Help and support</h2>
+        
+        <p class="govuk-body">If you need to make changes to your registration or have questions about veterinary visits, contact:</p>
+        
+        <div class="govuk-inset-text">
+            <p class="govuk-body">
+                <strong>Animal Health Team</strong><br>
+                Telephone: 03000 200 301<br>
+                Email: <a class="govuk-link" href="mailto:animalhealth@gov.uk">animalhealth@gov.uk</a><br>
+                Monday to Friday, 8:30am to 5pm<br>
+            </p>
+            <p class="govuk-body">
+                <a class="govuk-link" href="#">Find out about call charges</a>
+            </p>
+        </div>
+
+        <p class="govuk-body">
+            <a class="govuk-link" href="/">Register more animals</a>
+        </p>
+        
+        <h2 class="govuk-heading-m">Give us feedback</h2>
+        
+        <p class="govuk-body">
+            <a class="govuk-link" href="#">What did you think of this service?</a> (takes 30 seconds)
+        </p>
+    </div>
+</div>
+{% endblock %}

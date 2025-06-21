@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }} - GOV.UK{% endblock %}
+
+{% block beforeContent %}
+<div class="govuk-phase-banner">
+    <p class="govuk-phase-banner__content">
+        <strong class="govuk-tag govuk-phase-banner__content__tag">
+            Beta
+        </strong>
+        <span class="govuk-phase-banner__text">
+            This is a new service – your <a class="govuk-link" href="#">feedback</a> will help us to improve it.
+        </span>
+    </p>
+</div>
+<a href="/" class="govuk-back-link">Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        {% if errors %}
+        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
+            <h2 class="govuk-error-summary__title" id="error-summary-title">
+                There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+                    {% if errors.species %}
+                    <li>
+                        <a href="#species">{{ errors.species }}</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <form class="form" action="/species/{{ sessionId }}" method="post" novalidate>
+            <div class="govuk-form-group{% if errors.species %} govuk-form-group--error{% endif %}">
+                <fieldset class="govuk-fieldset" aria-describedby="species-hint{% if errors.species %} species-error{% endif %}">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                        <h1 class="govuk-fieldset__heading">
+                            {{ pageTitle }}
+                        </h1>
+                    </legend>
+                    <div id="species-hint" class="govuk-hint">
+                        Select all that apply. You'll be able to add the number of each type of animal in the next step.
+                    </div>
+                    {% if errors.species %}
+                    <p id="species-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span>
+                        {{ errors.species }}
+                    </p>
+                    {% endif %}
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">                        {% for key, speciesData in species %}
+                        <div class="govuk-checkboxes__item">
+                            <input class="govuk-checkboxes__input" id="species-{{ key }}" name="species" type="checkbox" value="{{ key }}"{% if key in selectedSpecies %} checked{% endif %}>
+                            <label class="govuk-label govuk-checkboxes__label" for="species-{{ key }}">
+                                {{ speciesData.name }}
+                            </label>
+                            <div id="species-{{ key }}-hint" class="govuk-hint govuk-checkboxes__hint">
+                                Including {% for subcategory in speciesData.subcategories %}{{ subcategory.name | lower }}{% if not loop.last %}, {% endif %}{% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+            </div>
+
+            <button class="govuk-button" data-module="govuk-button">
+                Continue
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
