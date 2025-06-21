@@ -20,7 +20,7 @@ app.set('view engine', 'html');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Static files - Critical GOV.UK Frontend asset paths
+// Static files - Critical GOV.UK Frontend paths
 app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk/assets')));
 app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
@@ -30,259 +30,175 @@ const animalSpecies = {
     cattle: {
         name: 'Cattle',
         key: 'cattle',
-        subcategories: [
-            { name: 'Dairy cows', key: 'dairy_cows' },
-            { name: 'Beef cattle', key: 'beef_cattle' },
-            { name: 'Bulls', key: 'bulls' },
-            { name: 'Calves', key: 'calves' }
-        ]
+        subcategories: ['Bulls', 'Cows', 'Heifers', 'Calves']
     },
     sheep: {
         name: 'Sheep',
         key: 'sheep',
-        subcategories: [
-            { name: 'Ewes', key: 'ewes' },
-            { name: 'Rams', key: 'rams' },
-            { name: 'Lambs', key: 'lambs' },
-            { name: 'Wethers', key: 'wethers' }
-        ]
+        subcategories: ['Rams', 'Ewes', 'Lambs']
     },
     pigs: {
         name: 'Pigs',
         key: 'pigs',
-        subcategories: [
-            { name: 'Sows', key: 'sows' },
-            { name: 'Boars', key: 'boars' },
-            { name: 'Piglets', key: 'piglets' },
-            { name: 'Finishing pigs', key: 'finishing_pigs' }
-        ]
+        subcategories: ['Boars', 'Sows', 'Piglets']
     },
     poultry: {
         name: 'Poultry',
         key: 'poultry',
-        subcategories: [
-            { name: 'Laying hens', key: 'laying_hens' },
-            { name: 'Broiler chickens', key: 'broiler_chickens' },
-            { name: 'Ducks', key: 'ducks' },
-            { name: 'Geese', key: 'geese' },
-            { name: 'Turkeys', key: 'turkeys' }
-        ]
+        subcategories: ['Chickens', 'Ducks', 'Geese', 'Turkeys']
     },
     horses: {
         name: 'Horses',
         key: 'horses',
-        subcategories: [
-            { name: 'Mares', key: 'mares' },
-            { name: 'Stallions', key: 'stallions' },
-            { name: 'Geldings', key: 'geldings' },
-            { name: 'Foals', key: 'foals' }
-        ]
+        subcategories: ['Stallions', 'Mares', 'Geldings', 'Foals']
     }
 };
 
-// Session data (in production, use proper session storage)
-let sessionData = {};
-
-// Generate a simple session ID
-function generateSessionId() {
-    return Math.random().toString(36).substring(2) + Date.now().toString(36);
-}
-
 // Routes
 app.get('/', (req, res) => {
-    const sessionId = generateSessionId();
-    sessionData[sessionId] = { selectedSpecies: [], animalCounts: {} };
-    
     res.render('start', {
-        pageTitle: 'Register animals for vet visits',
-        serviceName: 'Register animals for vet visits',
-        sessionId: sessionId
+        serviceName: 'Register animals for vet visits'
     });
 });
 
-app.get('/species/:sessionId', (req, res) => {
-    const { sessionId } = req.params;
+app.get('/species-selection', (req, res) => {
+    // Generate reference number server-side
+    const referenceNumber = 'VV' + Date.now().toString().slice(-8);
     
-    if (!sessionData[sessionId]) {
-        return res.redirect('/');
-    }
-
     res.render('species-selection', {
-        pageTitle: 'What type of animals do you have?',
         serviceName: 'Register animals for vet visits',
-        sessionId: sessionId,
+        pageTitle: 'What species of animals do you have?',
         species: animalSpecies,
-        selectedSpecies: sessionData[sessionId].selectedSpecies || [],
+        referenceNumber: referenceNumber,
         errors: req.query.errors ? JSON.parse(decodeURIComponent(req.query.errors)) : null
     });
 });
 
-app.post('/species/:sessionId', (req, res) => {
-    const { sessionId } = req.params;
-    const selectedSpecies = req.body.species || [];
-    
-    if (!sessionData[sessionId]) {
-        return res.redirect('/');
-    }
-
-    // Validate selection
+app.post('/species-selection', (req, res) => {
+    const selectedSpecies = req.body.species;
     const errors = {};
-    if (!selectedSpecies.length) {
-        errors.species = 'Select at least one type of animal';
-    }
-
-    if (Object.keys(errors).length > 0) {
-        return res.redirect(`/species/${sessionId}?errors=${encodeURIComponent(JSON.stringify(errors))}`);
-    }
-
-    // Store selection
-    sessionData[sessionId].selectedSpecies = Array.isArray(selectedSpecies) ? selectedSpecies : [selectedSpecies];
     
-    res.redirect(`/animal-counts/${sessionId}`);
+    if (!selectedSpecies || selectedSpecies.length === 0) {
+        errors.species = {
+            text: 'Select at least one species of animal'
+        };
+        
+        const errorQuery = encodeURIComponent(JSON.stringify(errors));
+        return res.redirect(`/species-selection?errors=${errorQuery}`);
+    }
+    
+    // Store selected species in session (simplified for demo)
+    const speciesNames = Array.isArray(selectedSpecies) ? selectedSpecies : [selectedSpecies];
+    const queryParams = speciesNames.map(s => `species=${encodeURIComponent(s)}`).join('&');
+    
+    res.redirect(`/animal-counts?${queryParams}`);
 });
 
-app.get('/animal-counts/:sessionId', (req, res) => {
-    const { sessionId } = req.params;
+app.get('/animal-counts', (req, res) => {
+    const selectedSpeciesKeys = Array.isArray(req.query.species) ? req.query.species : [req.query.species];
     
-    if (!sessionData[sessionId] || !sessionData[sessionId].selectedSpecies.length) {
-        return res.redirect('/');
+    if (!selectedSpeciesKeys || selectedSpeciesKeys.length === 0) {
+        return res.redirect('/species-selection');
     }
-
-    const selectedSpeciesData = sessionData[sessionId].selectedSpecies.map(speciesKey => ({
-        ...animalSpecies[speciesKey],
-        subcategories: animalSpecies[speciesKey].subcategories.map(sub => ({
-            ...sub,
-            fieldName: `${speciesKey}_${sub.key}`,
-            currentValue: sessionData[sessionId].animalCounts[`${speciesKey}_${sub.key}`] || ''
-        }))
-    }));
-
+    
+    const selectedSpecies = selectedSpeciesKeys
+        .filter(key => animalSpecies[key])
+        .map(key => animalSpecies[key]);
+    
+    if (selectedSpecies.length === 0) {
+        return res.redirect('/species-selection');
+    }
+    
     res.render('animal-counts', {
-        pageTitle: 'How many animals do you have?',
         serviceName: 'Register animals for vet visits',
-        sessionId: sessionId,
-        selectedSpecies: selectedSpeciesData,
-        errors: req.query.errors ? JSON.parse(decodeURIComponent(req.query.errors)) : null
+        pageTitle: 'How many animals do you have?',
+        selectedSpecies: selectedSpecies,
+        errors: req.query.errors ? JSON.parse(decodeURIComponent(req.query.errors)) : null,
+        values: req.query.values ? JSON.parse(decodeURIComponent(req.query.values)) : {}
     });
 });
 
-app.post('/animal-counts/:sessionId', (req, res) => {
-    const { sessionId } = req.params;
-    
-    if (!sessionData[sessionId]) {
-        return res.redirect('/');
-    }
-
-    const animalCounts = req.body;
+app.post('/animal-counts', (req, res) => {
+    const selectedSpeciesKeys = Array.isArray(req.query.species) ? req.query.species : [req.query.species];
     const errors = {};
-
-    // Validate counts
-    for (const [fieldName, count] of Object.entries(animalCounts)) {
-        if (fieldName === 'sessionId') continue;
-          if (!count || count.trim() === '') {
-            errors[fieldName] = 'Enter the number of animals';
-        } else if (!/^\d+$/.test(count.trim())) {
-            errors[fieldName] = 'Number of animals must be a whole number';
-        } else if (parseInt(count.trim()) < 0) {
-            errors[fieldName] = 'Number of animals cannot be negative';
-        } else if (parseInt(count.trim()) > 999999) {
-            errors[fieldName] = 'Number of animals must be 999,999 or fewer';
-        }
-    }
-
-    if (Object.keys(errors).length > 0) {
-        return res.redirect(`/animal-counts/${sessionId}?errors=${encodeURIComponent(JSON.stringify(errors))}`);
-    }
-
-    // Store counts
-    sessionData[sessionId].animalCounts = animalCounts;
+    const values = {};
+    let hasErrors = false;
     
-    res.redirect(`/check-answers/${sessionId}`);
-});
-
-app.get('/check-answers/:sessionId', (req, res) => {
-    const { sessionId } = req.params;
-    
-    if (!sessionData[sessionId] || !sessionData[sessionId].selectedSpecies.length) {
-        return res.redirect('/');
-    }
-
-    const data = sessionData[sessionId];
-    const summaryData = [];
-
-    data.selectedSpecies.forEach(speciesKey => {
+    // Validate animal counts for each species and subcategory
+    selectedSpeciesKeys.forEach(speciesKey => {
         const species = animalSpecies[speciesKey];
-        const speciesAnimals = [];
+        if (!species) return;
         
         species.subcategories.forEach(subcategory => {
-            const fieldName = `${speciesKey}_${subcategory.key}`;
-            const count = data.animalCounts[fieldName];
+            // Create field name using same logic as template
+            const fieldName = `${speciesKey}_${subcategory.toLowerCase().replace(/\s+/g, '_')}`;
+            const count = req.body[fieldName];
             
-            if (count && parseInt(count) > 0) {
-                speciesAnimals.push({
-                    name: subcategory.name,
-                    count: parseInt(count).toLocaleString()
-                });
+            values[fieldName] = count || '';
+            
+            if (!count || count.trim() === '') {
+                errors[fieldName] = {
+                    text: `Enter the number of ${subcategory.toLowerCase()}`
+                };
+                hasErrors = true;
+            } else if (isNaN(count) || parseInt(count) < 0) {
+                errors[fieldName] = {
+                    text: `Number of ${subcategory.toLowerCase()} must be 0 or more`
+                };
+                hasErrors = true;
             }
         });
-
-        if (speciesAnimals.length > 0) {
-            summaryData.push({
-                speciesName: species.name,
-                animals: speciesAnimals
-            });
-        }
     });
-
-    // Generate reference number
-    const referenceNumber = 'VET' + Date.now().toString().slice(-8) + Math.random().toString(36).substring(2, 5).toUpperCase();
-
-    res.render('check-answers', {
-        pageTitle: 'Check your answers',
-        serviceName: 'Register animals for vet visits',
-        sessionId: sessionId,
-        summaryData: summaryData,
-        referenceNumber: referenceNumber
+    
+    if (hasErrors) {
+        const errorQuery = encodeURIComponent(JSON.stringify(errors));
+        const valuesQuery = encodeURIComponent(JSON.stringify(values));
+        const speciesQuery = selectedSpeciesKeys.map(s => `species=${encodeURIComponent(s)}`).join('&');
+        
+        return res.redirect(`/animal-counts?${speciesQuery}&errors=${errorQuery}&values=${valuesQuery}`);
+    }
+    
+    // Process successful submission
+    const animalCounts = {};
+    selectedSpeciesKeys.forEach(speciesKey => {
+        const species = animalSpecies[speciesKey];
+        if (!species) return;
+        
+        animalCounts[speciesKey] = {
+            name: species.name,
+            counts: {}
+        };
+        
+        species.subcategories.forEach(subcategory => {
+            const fieldName = `${speciesKey}_${subcategory.toLowerCase().replace(/\s+/g, '_')}`;
+            animalCounts[speciesKey].counts[subcategory] = parseInt(req.body[fieldName]) || 0;
+        });
     });
-});
-
-app.post('/check-answers/:sessionId', (req, res) => {
-    const { sessionId } = req.params;
     
-    if (!sessionData[sessionId]) {
-        return res.redirect('/');
-    }
-
-    // Generate reference number for confirmation
-    const referenceNumber = 'VET' + Date.now().toString().slice(-8) + Math.random().toString(36).substring(2, 5).toUpperCase();
+    // Generate registration reference
+    const registrationRef = 'REG' + Date.now().toString().slice(-8);
     
-    res.redirect(`/confirmation/${sessionId}/${referenceNumber}`);
-});
-
-app.get('/confirmation/:sessionId/:referenceNumber', (req, res) => {
-    const { sessionId, referenceNumber } = req.params;
-    
-    if (!sessionData[sessionId]) {
-        return res.redirect('/');
-    }
-
-    // Clean up session data after confirmation
-    delete sessionData[sessionId];
-
     res.render('confirmation', {
-        pageTitle: 'Registration complete',
         serviceName: 'Register animals for vet visits',
-        referenceNumber: referenceNumber
+        pageTitle: 'Registration complete',
+        animalCounts: animalCounts,
+        registrationReference: registrationRef
     });
 });
 
 // Error handling
 app.use((req, res) => {
-    res.status(404).render('error', {
-        pageTitle: 'Page not found',
+    res.status(404).render('404', {
         serviceName: 'Register animals for vet visits',
-        errorCode: '404',
-        errorMessage: 'Page not found'
+        pageTitle: 'Page not found'
+    });
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).render('500', {
+        serviceName: 'Register animals for vet visits',
+        pageTitle: 'Sorry, there is a problem with the service'
     });
 });
 
