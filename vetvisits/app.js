@@ -2,9 +2,11 @@ const express = require('express');
 const nunjucks = require('nunjucks');
 const bodyParser = require('body-parser');
 const path = require('path');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
 
 // Configure Nunjucks
 nunjucks.configure('views', {
@@ -23,118 +25,71 @@ app.use(bodyParser.json());
 app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk/assets')));
 app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk')));
 
-// Define animal species and their subcategories
-const animalSpecies = {
-  cattle: {
-    name: 'Cattle',
-    key: 'cattle',
-    subcategories: ['Dairy cows', 'Beef cattle', 'Bulls', 'Calves']
-  },
-  sheep: {
-    name: 'Sheep',
-    key: 'sheep',
-    subcategories: ['Ewes', 'Rams', 'Lambs', 'Wethers']
-  },
-  pigs: {
-    name: 'Pigs',
-    key: 'pigs',
-    subcategories: ['Sows', 'Boars', 'Piglets', 'Finisher pigs']
-  },
-  poultry: {
-    name: 'Poultry',
-    key: 'poultry',
-    subcategories: ['Chickens', 'Ducks', 'Geese', 'Turkeys']
-  },
-  horses: {
-    name: 'Horses',
-    key: 'horses',
-    subcategories: ['Mares', 'Stallions', 'Geldings', 'Foals']
+// API helper functions
+async function fetchFromAPI(endpoint) {
+  try {
+    const response = await axios.get(`${API_BASE_URL}${endpoint}`);
+    return response.data;
+  } catch (error) {
+    console.error(`API Error for ${endpoint}:`, error.message);
+    throw new Error('Unable to fetch data from API');
   }
-};
-
-// Sample products for basket functionality (matching basket.jpg exactly)
-const products = {
-  'heirloom-tomato': {
-    id: 'heirloom-tomato',
-    name: 'Heirloom tomato',
-    price: 5.99,
-    pricePerUnit: 5.99,
-    unit: 'lb'
-  },
-  'organic-ginger': {
-    id: 'organic-ginger',
-    name: 'Organic ginger',
-    price: 12.99,
-    pricePerUnit: 12.99,
-    unit: 'lb'
-  },
-  'sweet-onion': {
-    id: 'sweet-onion',
-    name: 'Sweet onion',
-    price: 2.99,
-    pricePerUnit: 2.99,
-    unit: 'lb'
-  }
-};
-
-// In-memory basket storage (matching basket.jpg exactly)
-let basketItems = [
-  {
-    productId: 'heirloom-tomato',
-    product: products['heirloom-tomato'],
-    quantity: 1,
-    totalPrice: 5.99
-  },
-  {
-    productId: 'organic-ginger',
-    product: products['organic-ginger'],
-    quantity: 0.5,
-    totalPrice: 6.50
-  },
-  {
-    productId: 'sweet-onion',
-    product: products['sweet-onion'],
-    quantity: 5,
-    totalPrice: 14.95
-  }
-];
-
-// Generate unique reference number
-function generateReferenceNumber() {
-  const timestamp = Date.now().toString().slice(-6);
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  return `VV${timestamp}${random}`;
 }
 
-// Calculate basket totals (matching basket.jpg exactly)
-function calculateBasketTotals(items) {
-  const subtotal = 27.44; // Exact subtotal from image
-  const shipping = 3.99;  // Exact shipping from image
-  const tax = 2.00;       // Exact tax from image
-  const total = 33.43;    // Exact total from image
-  
-  return {
-    subtotal: subtotal.toFixed(2),
-    shipping: shipping.toFixed(2),
-    tax: tax.toFixed(2),
-    total: total.toFixed(2),
-    itemCount: items.length
-  };
+async function postToAPI(endpoint, data) {
+  try {
+    const response = await axios.post(`${API_BASE_URL}${endpoint}`, data);
+    return response.data;
+  } catch (error) {
+    console.error(`API Error for ${endpoint}:`, error.message);
+    throw new Error('Unable to send data to API');
+  }
+}
+
+async function putToAPI(endpoint, data) {
+  try {
+    const response = await axios.put(`${API_BASE_URL}${endpoint}`, data);
+    return response.data;
+  } catch (error) {
+    console.error(`API Error for ${endpoint}:`, error.message);
+    throw new Error('Unable to update data via API');
+  }
+}
+
+async function deleteFromAPI(endpoint) {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}${endpoint}`);
+    return response.data;
+  } catch (error) {
+    console.error(`API Error for ${endpoint}:`, error.message);
+    throw new Error('Unable to delete data via API');
+  }
 }
 
 // Routes
-app.get('/', (req, res) => {
-  const totals = calculateBasketTotals(basketItems);
-  res.render('start', { basketCount: totals.itemCount });
+app.get('/', async (req, res) => {
+  try {
+    const basketData = await fetchFromAPI('/api/basket');
+    res.render('start', { basketCount: basketData.data.totals.itemCount });
+  } catch (error) {
+    console.error('Error fetching basket data:', error.message);
+    res.render('start', { basketCount: 0 });
+  }
 });
 
-app.get('/species-selection', (req, res) => {
-  res.render('species-selection', {
-    species: Object.values(animalSpecies)
-  });
+app.get('/species-selection', async (req, res) => {
+  try {
+    const speciesData = await fetchFromAPI('/api/species');
+    res.render('species-selection', {
+      species: speciesData.data
+    });
+  } catch (error) {
+    console.error('Error fetching species data:', error.message);
+    res.status(500).render('404');
+  }
 });
 
-app.post('/species-selection', (req, res) => {
+app.post('/species-selection', async (req, res) => {
   const { species } = req.body;
   const errors = [];
 
@@ -146,11 +101,16 @@ app.post('/species-selection', (req, res) => {
   }
 
   if (errors.length > 0) {
-    return res.render('species-selection', {
-      species: Object.values(animalSpecies),
-      errors,
-      selectedSpecies: species || []
-    });
+    try {
+      const speciesData = await fetchFromAPI('/api/species');
+      return res.render('species-selection', {
+        species: speciesData.data,
+        errors,
+        selectedSpecies: species || []
+      });
+    } catch (error) {
+      return res.status(500).render('404');
+    }
   }
 
   // Store selected species in session-like format (simplified for demo)
@@ -160,119 +120,187 @@ app.post('/species-selection', (req, res) => {
   res.redirect(`/animal-counts?${queryParams}`);
 });
 
-app.get('/animal-counts', (req, res) => {
+app.get('/animal-counts', async (req, res) => {
   const selectedSpeciesKeys = Array.isArray(req.query.species) ? req.query.species : [req.query.species];
   
   if (!selectedSpeciesKeys || selectedSpeciesKeys.length === 0) {
     return res.redirect('/species-selection');
   }
 
-  const selectedSpecies = selectedSpeciesKeys
-    .filter(key => animalSpecies[key])
-    .map(key => animalSpecies[key]);
+  try {
+    const speciesData = await fetchFromAPI('/api/species');
+    const allSpecies = speciesData.data;
+    
+    // Create a map for quick lookup
+    const speciesMap = {};
+    allSpecies.forEach(species => {
+      speciesMap[species.key] = species;
+    });
 
-  res.render('animal-counts', {
-    selectedSpecies,
-    formData: req.query
-  });
+    const selectedSpecies = selectedSpeciesKeys
+      .filter(key => speciesMap[key])
+      .map(key => speciesMap[key]);
+
+    res.render('animal-counts', {
+      selectedSpecies,
+      formData: req.query
+    });
+  } catch (error) {
+    console.error('Error fetching species data:', error.message);
+    res.status(500).render('404');
+  }
 });
 
-app.post('/animal-counts', (req, res) => {
+app.post('/animal-counts', async (req, res) => {
   const selectedSpeciesKeys = Array.isArray(req.query.species) ? req.query.species : [req.query.species];
-  const selectedSpecies = selectedSpeciesKeys
-    .filter(key => animalSpecies[key])
-    .map(key => animalSpecies[key]);
-
-  const errors = [];
-  const formData = req.body;
-
-  // Validate animal counts
-  selectedSpecies.forEach(species => {
-    species.subcategories.forEach(subcategory => {
-      const fieldName = `${species.key}_${subcategory.toLowerCase().replace(/\s+/g, '_')}`;
-      const value = formData[fieldName];
-      
-      if (!value || value === '' || isNaN(value) || parseInt(value) < 0) {
-        errors.push({
-          text: `Enter the number of ${subcategory.toLowerCase()} you have`,
-          href: `#${fieldName}`
-        });
-      }
-    });
-  });
-
-  if (errors.length > 0) {
-    return res.render('animal-counts', {
-      selectedSpecies,
-      errors,
-      formData
-    });
-  }
-
-  // Generate reference number and prepare summary data
-  const referenceNumber = generateReferenceNumber();
-  const animalCounts = {};
   
-  selectedSpecies.forEach(species => {
-    animalCounts[species.name] = {};
-    species.subcategories.forEach(subcategory => {
-      const fieldName = `${species.key}_${subcategory.toLowerCase().replace(/\s+/g, '_')}`;
-      animalCounts[species.name][subcategory] = parseInt(formData[fieldName]);
+  try {
+    const speciesData = await fetchFromAPI('/api/species');
+    const allSpecies = speciesData.data;
+    
+    // Create a map for quick lookup
+    const speciesMap = {};
+    allSpecies.forEach(species => {
+      speciesMap[species.key] = species;
     });
-  });
-  res.render('confirmation', {
-    referenceNumber,
-    animalCounts
-  });
+
+    const selectedSpecies = selectedSpeciesKeys
+      .filter(key => speciesMap[key])
+      .map(key => speciesMap[key]);
+
+    const errors = [];
+    const formData = req.body;
+
+    // Validate animal counts
+    selectedSpecies.forEach(species => {
+      species.subcategories.forEach(subcategory => {
+        const fieldName = `${species.key}_${subcategory.toLowerCase().replace(/\s+/g, '_')}`;
+        const value = formData[fieldName];
+        
+        if (!value || value === '' || isNaN(value) || parseInt(value) < 0) {
+          errors.push({
+            text: `Enter the number of ${subcategory.toLowerCase()} you have`,
+            href: `#${fieldName}`
+          });
+        }
+      });
+    });
+
+    if (errors.length > 0) {
+      return res.render('animal-counts', {
+        selectedSpecies,
+        errors,
+        formData
+      });
+    }
+
+    // Prepare summary data
+    const animalCounts = {};
+    
+    selectedSpecies.forEach(species => {
+      animalCounts[species.name] = {};
+      species.subcategories.forEach(subcategory => {
+        const fieldName = `${species.key}_${subcategory.toLowerCase().replace(/\s+/g, '_')}`;
+        animalCounts[species.name][subcategory] = parseInt(formData[fieldName]);
+      });
+    });
+
+    // Create registration via API
+    const registrationData = await postToAPI('/api/registrations', { animalCounts });
+    
+    res.render('confirmation', {
+      referenceNumber: registrationData.data.referenceNumber,
+      animalCounts
+    });
+  } catch (error) {
+    console.error('Error processing animal counts:', error.message);
+    res.status(500).render('404');
+  }
 });
 
 // Basket routes
-app.get('/basket', (req, res) => {
-  const totals = calculateBasketTotals(basketItems);
-  res.render('basket', {
-    basketItems,
-    totals
-  });
+app.get('/basket', async (req, res) => {
+  try {
+    const basketData = await fetchFromAPI('/api/basket');
+    res.render('basket', {
+      basket: basketData.data.items,
+      totals: basketData.data.totals
+    });
+  } catch (error) {
+    console.error('Error fetching basket data:', error.message);
+    res.status(500).render('404');
+  }
 });
 
-app.post('/basket/update', (req, res) => {
+app.post('/basket/add', async (req, res) => {
+  const { productId, quantity = 1 } = req.body;
+  
+  try {
+    await postToAPI('/api/basket/add', { productId, quantity: parseInt(quantity) });
+    res.redirect('/basket');
+  } catch (error) {
+    console.error('Error adding item to basket:', error.message);
+    res.redirect('/basket');
+  }
+});
+
+app.post('/basket/update', async (req, res) => {
   const { itemIndex, quantity } = req.body;
   const errors = [];
 
-  if (itemIndex !== undefined && basketItems[itemIndex]) {
-    const newQuantity = parseFloat(quantity);
+  try {
+    // Get current basket data to find the product ID
+    const basketData = await fetchFromAPI('/api/basket');
+    const item = basketData.data.items[itemIndex];
     
-    if (isNaN(newQuantity) || newQuantity < 0) {
-      errors.push({
-        text: 'Enter a valid quantity',
-        href: `#quantity-${itemIndex}`
-      });
-    } else if (newQuantity === 0) {
-      // Remove item from basket
-      basketItems.splice(itemIndex, 1);
-    } else {
-      basketItems[itemIndex].quantity = newQuantity;
-      basketItems[itemIndex].totalPrice = basketItems[itemIndex].product.pricePerUnit * newQuantity;
+    if (item) {
+      const newQuantity = parseFloat(quantity);
+      
+      if (isNaN(newQuantity) || newQuantity < 0) {
+        errors.push({
+          text: 'Enter a valid quantity',
+          href: `#quantity-${itemIndex}`
+        });
+      } else if (newQuantity === 0) {
+        // Remove item from basket
+        await deleteFromAPI(`/api/basket/remove/${item.product.id}`);
+      } else {
+        await putToAPI(`/api/basket/update/${item.product.id}`, { quantity: newQuantity });
+      }
     }
+  } catch (error) {
+    console.error('Error updating basket:', error.message);
   }
 
   if (errors.length > 0) {
-    const totals = calculateBasketTotals(basketItems);
-    return res.render('basket', {
-      basketItems,
-      totals,
-      errors
-    });
+    try {
+      const basketData = await fetchFromAPI('/api/basket');
+      return res.render('basket', {
+        basket: basketData.data.items,
+        totals: basketData.data.totals,
+        errors
+      });
+    } catch (error) {
+      return res.status(500).render('404');
+    }
   }
 
   res.redirect('/basket');
 });
 
-app.post('/basket/remove', (req, res) => {
+app.post('/basket/remove', async (req, res) => {
   const { itemIndex } = req.body;
   
-  if (itemIndex !== undefined && basketItems[itemIndex]) {
-    basketItems.splice(itemIndex, 1);
+  try {
+    // Get current basket data to find the product ID
+    const basketData = await fetchFromAPI('/api/basket');
+    const item = basketData.data.items[itemIndex];
+    
+    if (item) {
+      await deleteFromAPI(`/api/basket/remove/${item.product.id}`);
+    }
+  } catch (error) {
+    console.error('Error removing item from basket:', error.message);
   }
   
   res.redirect('/basket');

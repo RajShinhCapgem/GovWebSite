@@ -11,3 +11,7 @@ Use Context7 constantly (govuk-design-system, nunjucks etc) to ensure you get th
 # Prompt 2 - Generate basket from image
 
 I want a page linked from VetVisits home page that creates a basket page represented by the basket.jpg, implement it using the GOV.UK design system. Follow the products on the image exactly for the basket, i.e., tomatoe, 1lb
+
+# Prompt 3 - Create API and connect web app
+
+Move all the hardcoded products, vet visits functionality to an API named vetvisits-api (the values can be harded there) and integrate it with the vet visits app

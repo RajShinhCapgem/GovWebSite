@@ -37,14 +37,14 @@
 
       <h1 class="govuk-heading-xl">
         Basket
-        <span class="govuk-caption-xl">{{ basketItems | length }} item{% if basketItems | length != 1 %}s{% endif %}</span>
+        <span class="govuk-caption-xl">{{ basket | length }} item{% if basket | length != 1 %}s{% endif %}</span>
       </h1>
     </div>
   </div>
 
-  {% if basketItems | length > 0 %}
+  {% if basket | length > 0 %}
     <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">        {% for item in basketItems %}
+      <div class="govuk-grid-column-two-thirds">        {% for item in basket %}
           <div class="govuk-summary-card">
             <div class="govuk-summary-card__title-wrapper">
               <h2 class="govuk-summary-card__title">{{ item.product.name }}</h2>
