@@ -1,76 +1,76 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 
-{% block beforeContent %}
-<a class="govuk-back-link" href="/">Back</a>
+{% block pageTitle %}Select animal species{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="govuk-breadcrumbs">
+    <ol class="govuk-breadcrumbs__list">
+      <li class="govuk-breadcrumbs__list-item">
+        <a class="govuk-breadcrumbs__link" href="/">Register animals for vet visits</a>
+      </li>
+      <li class="govuk-breadcrumbs__list-item">
+        Select animal species
+      </li>
+    </ol>
+  </div>
 {% endblock %}
 
 {% block content %}
-<div class="govuk-grid-row">
+  <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        {% if errors %}
-        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
-            <h2 class="govuk-error-summary__title" id="error-summary-title">
-                There is a problem
+      {% if errors %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">
+              There is a problem
             </h2>
             <div class="govuk-error-summary__body">
-                <ul class="govuk-list govuk-error-summary__list">
-                    {% if errors.species %}
-                    <li>
-                        <a href="#species">{{ errors.species.text }}</a>
-                    </li>
-                    {% endif %}
-                </ul>
+              <ul class="govuk-list govuk-error-summary__list">
+                {% for error in errors %}
+                  <li>
+                    <a href="{{ error.href }}">{{ error.text }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
             </div>
+          </div>
         </div>
-        {% endif %}
+      {% endif %}
 
-        <form class="form" action="/species-selection" method="post">
-            <div class="govuk-form-group{% if errors and errors.species %} govuk-form-group--error{% endif %}">
-                <fieldset class="govuk-fieldset" aria-describedby="species-hint{% if errors and errors.species %} species-error{% endif %}">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                        <h1 class="govuk-fieldset__heading">
-                            What species of animals do you have?
-                        </h1>
-                    </legend>
-                    <div id="species-hint" class="govuk-hint">
-                        Select all that apply. You'll be able to specify numbers for each category on the next page.
-                    </div>
-                    {% if errors and errors.species %}
-                    <p id="species-error" class="govuk-error-message">
-                        <span class="govuk-visually-hidden">Error:</span>
-                        {{ errors.species.text }}
-                    </p>
-                    {% endif %}
-                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                        {% for key, animal in species %}
-                        <div class="govuk-checkboxes__item">
-                            <input class="govuk-checkboxes__input" id="species-{{ key }}" name="species" type="checkbox" value="{{ key }}">
-                            <label class="govuk-label govuk-checkboxes__label" for="species-{{ key }}">
-                                {{ animal.name }}
-                            </label>
-                            <div id="species-{{ key }}-hint" class="govuk-hint govuk-checkboxes__hint">
-                                Categories: {% for subcategory in animal.subcategories %}{{ subcategory }}{% if not loop.last %}, {% endif %}{% endfor %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </fieldset>
+      <form class="form" action="/species-selection" method="post">
+        <div class="govuk-form-group{% if errors %} govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset" aria-describedby="species-hint{% if errors %} species-error{% endif %}">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h1 class="govuk-fieldset__heading">
+                Which species of animals do you have?
+              </h1>
+            </legend>
+            <div id="species-hint" class="govuk-hint">
+              Select all that apply.
             </div>
-
-            <button class="govuk-button" data-module="govuk-button">
-                Continue
-            </button>
-        </form>
-    </div>
-    
-    <div class="govuk-grid-column-one-third">
-        <div class="govuk-inset-text">
-            <p class="govuk-body-s">
-                <strong>Reference number:</strong><br>
-                {{ referenceNumber }}
-            </p>
-            <p class="govuk-body-s">Use this reference when contacting your vet about this registration.</p>
+            {% if errors %}
+              <p id="species-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span>
+                Select at least one species of animal you have
+              </p>
+            {% endif %}
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              {% for speciesItem in species %}
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="species-{{ speciesItem.key }}" name="species" type="checkbox" value="{{ speciesItem.key }}"{% if selectedSpecies and speciesItem.key in selectedSpecies %} checked{% endif %}>
+                  <label class="govuk-label govuk-checkboxes__label" for="species-{{ speciesItem.key }}">
+                    {{ speciesItem.name }}
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
         </div>
+
+        <button class="govuk-button" data-module="govuk-button">
+          Continue
+        </button>
+      </form>
     </div>
-</div>
+  </div>
 {% endblock %}

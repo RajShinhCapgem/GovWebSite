@@ -1,88 +1,106 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 
-{% block beforeContent %}
-<a class="govuk-back-link" href="/species-selection">Back</a>
+{% block pageTitle %}Enter animal counts{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="govuk-breadcrumbs">
+    <ol class="govuk-breadcrumbs__list">
+      <li class="govuk-breadcrumbs__list-item">
+        <a class="govuk-breadcrumbs__link" href="/">Register animals for vet visits</a>
+      </li>
+      <li class="govuk-breadcrumbs__list-item">
+        <a class="govuk-breadcrumbs__link" href="/species-selection">Select animal species</a>
+      </li>
+      <li class="govuk-breadcrumbs__list-item">
+        Enter animal counts
+      </li>
+    </ol>
+  </div>
 {% endblock %}
 
 {% block content %}
-<div class="govuk-grid-row">
+  <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        {% if errors %}
-        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
-            <h2 class="govuk-error-summary__title" id="error-summary-title">
-                There is a problem
+      {% if errors %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">
+              There is a problem
             </h2>
             <div class="govuk-error-summary__body">
-                <ul class="govuk-list govuk-error-summary__list">
-                    {% for fieldName, error in errors %}
-                    <li>
-                        <a href="#{{ fieldName }}">{{ error.text }}</a>
-                    </li>
+              <ul class="govuk-list govuk-error-summary__list">
+                {% for error in errors %}
+                  <li>
+                    <a href="{{ error.href }}">{{ error.text }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">
+        Enter the number of animals you have
+      </h1>
+
+      <p class="govuk-body">
+        Enter the number of animals you have for each type. If you don't have any animals of a particular type, enter 0.
+      </p>
+
+      <form class="form" action="/animal-counts?{% for species in selectedSpecies %}species={{ species.key }}{% if not loop.last %}&{% endif %}{% endfor %}" method="post">
+        {% for species in selectedSpecies %}
+          <div class="govuk-form-group">
+            <fieldset class="govuk-fieldset">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading">
+                  {{ species.name }}
+                </h2>
+              </legend>
+
+              <div class="govuk-grid-row">
+                {% for subcategory in species.subcategories %}
+                  {% set fieldName = species.key + '_' + (subcategory | lower | replace(' ', '_')) %}
+                  {% set hasError = false %}
+                  {% if errors %}
+                    {% for error in errors %}
+                      {% if error.href === '#' + fieldName %}
+                        {% set hasError = true %}
+                      {% endif %}
                     {% endfor %}
-                </ul>
-            </div>
-        </div>
-        {% endif %}
+                  {% endif %}
 
-        <form class="form" action="/animal-counts" method="post">
-            <h1 class="govuk-heading-l">How many animals do you have?</h1>
-            
-            <p class="govuk-body">Enter the number of animals you have in each category.</p>
-            
-            {% for species in selectedSpecies %}
-            <div class="govuk-form-group govuk-!-margin-bottom-6">
-                <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-                        <h2 class="govuk-fieldset__heading">
-                            {{ species.name }}
-                        </h2>
-                    </legend>
-                    
-                    <div class="govuk-form-group">
-                        {% for subcategory in species.subcategories %}
-                        {% set fieldName = species.key + '_' + (subcategory | lower | replace(' ', '_')) %}
-                        <div class="govuk-form-group{% if errors and errors[fieldName] %} govuk-form-group--error{% endif %}">
-                            <label class="govuk-label" for="{{ fieldName }}">
-                                {{ subcategory }}
-                            </label>
-                            {% if errors and errors[fieldName] %}
-                            <p id="{{ fieldName }}-error" class="govuk-error-message">
-                                <span class="govuk-visually-hidden">Error:</span>
-                                {{ errors[fieldName].text }}
-                            </p>
-                            {% endif %}
-                            <input class="govuk-input govuk-input--width-5{% if errors and errors[fieldName] %} govuk-input--error{% endif %}" 
-                                   id="{{ fieldName }}" 
-                                   name="{{ fieldName }}" 
-                                   type="number" 
-                                   min="0"
-                                   value="{{ values[fieldName] if values and values[fieldName] else '' }}"
-                                   {% if errors and errors[fieldName] %}aria-describedby="{{ fieldName }}-error"{% endif %}>
-                        </div>
-                        {% endfor %}
+                  <div class="govuk-grid-column-one-half">
+                    <div class="govuk-form-group{% if hasError %} govuk-form-group--error{% endif %}">
+                      <label class="govuk-label" for="{{ fieldName }}">
+                        {{ subcategory }}
+                      </label>
+                      {% if hasError %}
+                        <p id="{{ fieldName }}-error" class="govuk-error-message">
+                          <span class="govuk-visually-hidden">Error:</span>
+                          Enter the number of {{ subcategory | lower }} you have
+                        </p>
+                      {% endif %}
+                      <input class="govuk-input govuk-input--width-5{% if hasError %} govuk-input--error{% endif %}" 
+                             id="{{ fieldName }}" 
+                             name="{{ fieldName }}" 
+                             type="number" 
+                             min="0" 
+                             step="1"
+                             value="{{ formData[fieldName] if formData[fieldName] else '' }}"
+                             {% if hasError %}aria-describedby="{{ fieldName }}-error"{% endif %}>
                     </div>
-                </fieldset>
-            </div>
-            {% endfor %}
+                  </div>
+                {% endfor %}
+              </div>
+            </fieldset>
+          </div>
+        {% endfor %}
 
-            <button class="govuk-button" data-module="govuk-button">
-                Continue
-            </button>
-        </form>
+        <button class="govuk-button" data-module="govuk-button">
+          Continue
+        </button>
+      </form>
     </div>
-    
-    <div class="govuk-grid-column-one-third">
-        <div class="govuk-inset-text">
-            <p class="govuk-body-s">
-                <strong>Help with counting</strong>
-            </p>
-            <p class="govuk-body-s">
-                Enter 0 if you don't have any animals in a particular category.
-            </p>
-            <p class="govuk-body-s">
-                Make sure your counts are accurate as they'll be used for planning the vet visit.
-            </p>
-        </div>
-    </div>
-</div>
+  </div>
 {% endblock %}

@@ -1,74 +1,84 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
+
+{% block pageTitle %}Registration complete{% endblock %}
 
 {% block content %}
-<div class="govuk-grid-row">
+  <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-panel govuk-panel--confirmation">
-            <h1 class="govuk-panel__title">Registration complete</h1>
-            <div class="govuk-panel__body">
-                Your registration reference number<br><strong>{{ registrationReference }}</strong>
-            </div>
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">
+          Registration complete
+        </h1>
+        <div class="govuk-panel__body">
+          Your reference number<br><strong>{{ referenceNumber }}</strong>
         </div>
-        
-        <p class="govuk-body">We have sent you a confirmation email.</p>
-        
-        <h2 class="govuk-heading-m">What happens next</h2>
-        
-        <p class="govuk-body">Your animal registration has been recorded. You can now:</p>
-        <ul class="govuk-list govuk-list--bullet">
-            <li>contact your veterinarian to arrange a visit</li>
-            <li>provide them with your registration reference: <strong>{{ registrationReference }}</strong></li>
-            <li>prepare your animals for the visit based on your vet's guidance</li>
-        </ul>
-        
-        <h2 class="govuk-heading-m">Your registered animals</h2>
-        
-        {% for speciesKey, speciesData in animalCounts %}
+      </div>
+
+      <p class="govuk-body">
+        We have sent you a confirmation email.
+      </p>
+
+      <p class="govuk-body">
+        Your animals have been registered for veterinary visits with the following details:
+      </p>
+
+      {% for speciesName, counts in animalCounts %}
         <div class="govuk-summary-card">
-            <div class="govuk-summary-card__title-wrapper">
-                <h3 class="govuk-summary-card__title">{{ speciesData.name }}</h3>
-            </div>
-            <div class="govuk-summary-card__content">
-                <dl class="govuk-summary-list">
-                    {% for subcategory, count in speciesData.counts %}
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">{{ subcategory }}</dt>
-                        <dd class="govuk-summary-list__value">{{ count }}</dd>
-                    </div>
-                    {% endfor %}
-                </dl>
-            </div>
+          <div class="govuk-summary-card__title-wrapper">
+            <h2 class="govuk-summary-card__title">{{ speciesName }}</h2>
+          </div>
+          <div class="govuk-summary-card__content">
+            <dl class="govuk-summary-list">
+              {% for subcategory, count in counts %}
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    {{ subcategory }}
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    {{ count }}
+                  </dd>
+                </div>
+              {% endfor %}
+            </dl>
+          </div>
         </div>
-        {% endfor %}
-        
-        <div class="govuk-inset-text">
-            <p>Keep your registration reference number safe. You'll need it when arranging your vet visit.</p>
-        </div>
-        
-        <p class="govuk-body">
-            <a href="/" class="govuk-link">Register another set of animals</a>
-        </p>
-        
-        <h2 class="govuk-heading-m">Help and support</h2>
-        
-        <p class="govuk-body">If you need help with this service:</p>
-        <ul class="govuk-list govuk-list--bullet">
-            <li>email: <a href="mailto:vetvisits@example.gov.uk" class="govuk-link">vetvisits@example.gov.uk</a></li>
-            <li>telephone: 0300 123 4567</li>
-        </ul>
-        
-        <div class="govuk-details" data-module="govuk-details">
-            <summary class="govuk-details__summary">
-                <span class="govuk-details__summary-text">Give feedback on this service</span>
-            </summary>
-            <div class="govuk-details__text">
-                <p class="govuk-body">
-                    Help us improve this service by 
-                    <a href="#" class="govuk-link">giving your feedback</a>. 
-                    It takes about 2 minutes.
-                </p>
-            </div>
-        </div>
+      {% endfor %}
+
+      <h2 class="govuk-heading-m">What happens next</h2>
+
+      <p class="govuk-body">
+        Your registration will be processed and you will be contacted within 5 working days to arrange veterinary visits.
+      </p>
+
+      <p class="govuk-body">
+        The veterinary team will contact you to:
+      </p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>confirm the details of your animals</li>
+        <li>arrange suitable visit times</li>
+        <li>discuss any specific health concerns</li>
+      </ul>
+
+      <div class="govuk-inset-text">
+        Save or print this page for your records. You can use the reference number <strong>{{ referenceNumber }}</strong> to track your registration.
+      </div>
+
+      <h2 class="govuk-heading-m">Help and support</h2>
+
+      <p class="govuk-body">
+        If you need to make changes to your registration or have questions, contact us:
+      </p>
+
+      <ul class="govuk-list">
+        <li>Telephone: 0300 0200 301</li>
+        <li>Monday to Friday, 8:30am to 5pm</li>
+        <li><a class="govuk-link" href="#">Find out about call charges</a></li>
+      </ul>
+
+      <p class="govuk-body">
+        <a class="govuk-link" href="/">Register more animals</a>
+      </p>
     </div>
-</div>
+  </div>
 {% endblock %}

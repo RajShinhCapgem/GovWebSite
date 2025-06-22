@@ -1,131 +1,133 @@
-# Vet Visits Registration Service
+# Veterinary Visits Registration Service
 
-A Node.js Express application built with the GOV.UK Design System for farmers to register animals for veterinary visits.
+A GOV.UK Design System compliant Node.js Express application for farmers to register animals for veterinary visits.
 
 ## Features
 
-- **Start page** with service information and prominent "Start now" button
-- **Species selection** with checkboxes for different animal types
-- **Animal counting** with input fields for each subcategory
-- **Confirmation page** with registration reference and summary
-- **Validation** and error handling following GOV.UK patterns
-- **Accessibility** compliant with WCAG 2.2 AA standards
-- **Responsive design** that works on all devices
+- **GOV.UK Design System**: Fully compliant with GOV.UK Design System v5.10.0+
+- **Accessibility**: WCAG 2.2 AA compliant with proper semantic HTML and ARIA labels
+- **Multi-step Form**: Species selection followed by detailed animal counts
+- **Validation**: Server-side form validation with user-friendly error messages
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
 
 ## Animal Species Supported
 
-- **Cattle**: Bulls, Cows, Heifers, Calves
-- **Sheep**: Rams, Ewes, Lambs  
-- **Pigs**: Boars, Sows, Piglets
+- **Cattle**: Dairy cows, Beef cattle, Bulls, Calves
+- **Sheep**: Ewes, Rams, Lambs, Wethers
+- **Pigs**: Sows, Boars, Piglets, Finisher pigs
 - **Poultry**: Chickens, Ducks, Geese, Turkeys
-- **Horses**: Stallions, Mares, Geldings, Foals
-
-## Prerequisites
-
-- Node.js (version 14 or higher)
-- npm
+- **Horses**: Mares, Stallions, Geldings, Foals
 
 ## Installation
 
-1. Navigate to the vetvisits directory:
-   ```
+1. **Clone and navigate to the project directory:**
+   ```bash
    cd vetvisits
    ```
 
-2. Install dependencies:
-   ```
+2. **Install dependencies:**
+   ```bash
    npm install
    ```
 
-## Running the Application
+3. **Start the application:**
+   ```bash
+   npm start
+   ```
+   
+   Or for development with auto-restart:
+   ```bash
+   npm run dev
+   ```
 
-### Development mode (with auto-restart):
-```
-npm run dev
-```
-
-### Production mode:
-```
-npm start
-```
-
-The application will run on http://localhost:3000
+4. **Open your browser and visit:**
+   ```
+   http://localhost:3000
+   ```
 
 ## Project Structure
 
 ```
 vetvisits/
-├── app.js              # Main Express application
-├── package.json        # Dependencies and scripts
-├── views/              # Nunjucks templates
-│   ├── base.html       # Base template with GOV.UK header/footer
-│   ├── start.html      # Start page
+├── app.js                 # Main Express application
+├── package.json           # Dependencies and scripts
+├── views/                 # Nunjucks templates
+│   ├── layout.html        # Base layout template
+│   ├── start.html         # Start page
 │   ├── species-selection.html  # Species selection form
-│   ├── animal-counts.html      # Animal counting form
-│   ├── confirmation.html       # Success confirmation
-│   ├── 404.html        # Page not found
-│   └── 500.html        # Server error
-└── public/             # Static assets (if needed)
+│   ├── animal-counts.html # Animal counts form
+│   ├── confirmation.html  # Registration confirmation
+│   └── 404.html          # Error page
+└── README.md             # This file
 ```
 
-## Key Features
-
-### Accessibility
-- Proper heading hierarchy (h1 → h6)
-- Skip links for keyboard navigation
-- ARIA labels and descriptions
-- Screen reader compatible
-- High contrast compliance
-
-### Form Validation
-- Server-side validation
-- Error summary at top of pages
-- Individual field error messages
-- Maintains user input on validation errors
-
-### User Experience
-- Progressive enhancement
-- Clear navigation with back links
-- Helpful hint text and guidance
-- Reference numbers for tracking
+## Key Design Decisions
 
 ### GOV.UK Design System Compliance
-- Uses govuk-frontend v5.10.0+
-- Correct asset paths configuration
-- Standard GOV.UK components and patterns
-- Official GOV.UK styling and behavior
+- Uses govuk-frontend v5.10.0+ with correct asset paths
+- Implements proper GOV.UK header, footer, and phase banner
+- Follows GOV.UK form patterns and error handling
+- Uses appropriate GOV.UK typography and spacing
 
-## Development Notes
+### Accessibility Features
+- Semantic HTML5 structure
+- Proper heading hierarchy (h1 → h6)
+- ARIA labels and descriptions
+- Skip links for keyboard navigation
+- Error summaries with focus management
+- High contrast colors meeting WCAG standards
 
-### Nunjucks Templates
-- Uses standard Nunjucks filters only (no advanced filters)
-- String manipulation done with built-in filters like `lower`, `replace`
-- Date/time generation handled in Express routes, not templates
-- Field naming consistent between templates and JavaScript
+### Nunjucks Template Best Practices
+- Uses standard Nunjucks filters (lower, replace, join)
+- Avoids advanced filters not available in standard Nunjucks
+- Uses loops and conditionals for complex data manipulation
+- Consistent field naming between JavaScript and templates
 
-### Error Handling
-- Comprehensive validation for all form inputs
-- User-friendly error messages
-- Proper error state styling
-- Graceful fallbacks for system errors
+### Form Validation
+- Server-side validation for all inputs
+- Clear, actionable error messages
+- Maintains form state on validation errors
+- Follows GOV.UK error handling patterns
 
-### Configuration
-- Static file serving configured for GOV.UK Frontend
-- Nunjucks configured with autoescape and watch mode
-- Body parser for form submission handling
+## API Endpoints
 
-## Browser Support
+- `GET /` - Start page
+- `GET /species-selection` - Species selection form
+- `POST /species-selection` - Process species selection
+- `GET /animal-counts` - Animal counts form
+- `POST /animal-counts` - Process animal counts and show confirmation
 
-Supports all modern browsers and assistive technologies as per GOV.UK Service Standard.
+## Dependencies
+
+- **express**: Web framework for Node.js
+- **nunjucks**: Template engine
+- **govuk-frontend**: GOV.UK Design System components
+- **body-parser**: Parse incoming request bodies
+
+## Development
+
+The application follows Express.js best practices and GOV.UK service standards:
+
+- Environment variables for configuration
+- Proper error handling and 404 pages
+- RESTful routing patterns
+- Session management for multi-step forms
+- Responsive design for all devices
+
+## Testing
+
+The application should be tested with:
+- Keyboard navigation only
+- Screen readers (NVDA, JAWS, VoiceOver)
+- Multiple browsers and devices
+- W3C HTML validation
+- WCAG 2.2 AA compliance checking
 
 ## Contributing
 
-Follow GOV.UK Design System guidelines and coding standards. Test with:
-- Keyboard navigation only
-- Screen readers
-- Different viewport sizes
-- HTML validation
-
-## License
-
-MIT
+When making changes:
+1. Follow GOV.UK Design System guidelines
+2. Maintain WCAG 2.2 AA compliance
+3. Test with assistive technologies
+4. Use semantic HTML and proper ARIA labels
+5. Follow Nunjucks template best practices

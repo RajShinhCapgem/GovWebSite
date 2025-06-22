@@ -1,25 +1,21 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 
-{% set pageTitle = "Page not found" %}
+{% block pageTitle %}Page not found{% endblock %}
 
 {% block content %}
-<div class="govuk-grid-row">
+  <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Page not found</h1>
-        
-        <p class="govuk-body">If you typed the web address, check it is correct.</p>
-        
-        <p class="govuk-body">If you pasted the web address, check you copied the entire address.</p>
-        
-        <p class="govuk-body">
-            If the web address is correct or you selected a link or button, 
-            <a href="mailto:vetvisits@example.gov.uk" class="govuk-link">contact us</a> 
-            if you need help with the vet visits registration service.
-        </p>
-        
-        <p class="govuk-body">
-            <a href="/" class="govuk-link">Go to the vet visits registration start page</a>
-        </p>
+      <h1 class="govuk-heading-xl">Page not found</h1>
+      
+      <p class="govuk-body">If you typed the web address, check it is correct.</p>
+      
+      <p class="govuk-body">If you pasted the web address, check you copied the entire address.</p>
+      
+      <p class="govuk-body">If the web address is correct or you selected a link or button, <a class="govuk-link" href="#">contact us</a> if you need help.</p>
+      
+      <p class="govuk-body">
+        <a class="govuk-link" href="/">Go to the homepage</a>
+      </p>
     </div>
-</div>
+  </div>
 {% endblock %}
