@@ -1,4 +1,4 @@
-Prompt 1 - Create Site
+# Prompt 1 - Create Site
 
 Create a single-page Node.js Express app using GOV.UK Design System named vetvisits inside the current folder for farmers to register animals for vet visits, with a page for selecting the species the farmer has, and on the next page adding the animal count based on the sub categories of that species (e.g., ewes).
 
@@ -8,6 +8,6 @@ IMPORTANT: Strictly follow the copilot-instructions.md file, especially the Nunj
 
 Use Context7 constantly (govuk-design-system, nunjucks etc) to ensure you get the correct libraries, styles, codes, and learnings.
 
-Prompt 2 - Generate basket from image
+# Prompt 2 - Generate basket from image
 
 I want a page linked from VetVisits home page that creates a basket page represented by the basket.jpg, implement it using the GOV.UK design system. Follow the products on the image exactly for the basket, i.e., tomatoe, 1lb
