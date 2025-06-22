@@ -11,6 +11,10 @@ You are developing applications that MUST comply with the GOV.UK Design System (
 
 ## Essential Requirements
 
+IMPORTANT: Strictly follow the copilot-instructions.md file, especially the Nunjucks template best practices section regarding filter syntax vs JavaScript methods.
+
+Use Context7 constantly (govuk-design-system, nunjucks etc) to ensure you get the correct libraries, styles, codes, and learnings.
+
 ### 1. Asset Path Configuration (Critical)
 When setting up GOV.UK Frontend in Express.js applications:
 

@@ -1,0 +1,193 @@
+{% extends "layout.html" %}
+
+{% block pageTitle %}Basket{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="govuk-breadcrumbs">
+    <ol class="govuk-breadcrumbs__list">
+      <li class="govuk-breadcrumbs__list-item">
+        <a class="govuk-breadcrumbs__link" href="/">Register animals for vet visits</a>
+      </li>
+      <li class="govuk-breadcrumbs__list-item">
+        Basket
+      </li>
+    </ol>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {% if errors %}
+        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
+          <h2 class="govuk-error-summary__title" id="error-summary-title">
+            There is a problem
+          </h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              {% for error in errors %}
+                <li>
+                  <a href="{{ error.href }}">{{ error.text }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">
+        Basket
+        <span class="govuk-caption-xl">{{ basketItems | length }} item{% if basketItems | length != 1 %}s{% endif %}</span>
+      </h1>
+    </div>
+  </div>
+
+  {% if basketItems | length > 0 %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {% for item in basketItems %}
+          <div class="govuk-summary-card">
+            <div class="govuk-summary-card__title-wrapper">
+              <h2 class="govuk-summary-card__title">{{ item.service.name }}</h2>
+              <ul class="govuk-summary-card__actions">
+                <li class="govuk-summary-card__action">
+                  <form method="post" action="/basket/remove" style="display: inline;">
+                    <input type="hidden" name="itemIndex" value="{{ loop.index0 }}">
+                    <button type="submit" class="govuk-link" style="border: none; background: none; color: #1d70b8; text-decoration: underline; cursor: pointer;">
+                      Remove<span class="govuk-visually-hidden"> {{ item.service.name }}</span>
+                    </button>
+                  </form>
+                </li>
+              </ul>
+            </div>
+            <div class="govuk-summary-card__content">
+              <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    Price per unit
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    £{{ item.service.price | replace('.00', '') }}{% if item.service.price != item.service.price | round %}.{{ ('%.2f' | format(item.service.price)).split('.')[1] }}{% endif %} / {{ item.service.unit | replace('per ', '') }}
+                  </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    Quantity
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <form method="post" action="/basket/update" class="govuk-!-margin-bottom-0">
+                      <div class="govuk-form-group{% if errors %} govuk-form-group--error{% endif %}">
+                        <input type="hidden" name="itemIndex" value="{{ loop.index0 }}">
+                        <input 
+                          class="govuk-input govuk-input--width-5{% if errors %} govuk-input--error{% endif %}" 
+                          id="quantity-{{ loop.index0 }}" 
+                          name="quantity" 
+                          type="number" 
+                          min="0"
+                          step="0.1"
+                          value="{{ item.quantity }}"
+                          aria-describedby="quantity-{{ loop.index0 }}-hint"
+                        >
+                        <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-left-2">
+                          Update
+                        </button>
+                        <div id="quantity-{{ loop.index0 }}-hint" class="govuk-hint govuk-!-margin-top-1">
+                          Enter 0 to remove item
+                        </div>
+                      </div>
+                    </form>
+                  </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong>Total</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <strong>£{{ (item.service.price * item.quantity) | round(2) }}</strong>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-summary-card">
+          <div class="govuk-summary-card__title-wrapper">
+            <h2 class="govuk-summary-card__title">Order summary</h2>
+          </div>
+          <div class="govuk-summary-card__content">
+            <dl class="govuk-summary-list govuk-summary-list--no-border">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                  Subtotal
+                </dt>
+                <dd class="govuk-summary-list__value">
+                  £{{ totals.subtotal }}
+                </dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                  Shipping
+                </dt>
+                <dd class="govuk-summary-list__value">
+                  £{{ totals.shipping }}
+                </dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                  Tax
+                </dt>
+                <dd class="govuk-summary-list__value">
+                  £{{ totals.tax }}
+                </dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                  <strong>Total</strong>
+                </dt>
+                <dd class="govuk-summary-list__value">
+                  <strong>£{{ totals.total }}</strong>
+                </dd>
+              </div>
+            </dl>
+            
+            <div class="govuk-button-group govuk-!-margin-top-4">
+              <a href="/checkout" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+                Continue to payment
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="govuk-inset-text govuk-!-margin-top-4">
+          <p class="govuk-body">
+            <strong>Need help?</strong>
+          </p>
+          <p class="govuk-body">
+            Call our support team on 0300 200 1000 (Monday to Friday, 8:30am to 5pm)
+          </p>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-panel govuk-panel--confirmation">
+          <h1 class="govuk-panel__title">
+            Your basket is empty
+          </h1>
+        </div>
+
+        <p class="govuk-body">
+          You have no items in your basket.
+        </p>
+
+        <p class="govuk-body">
+          <a class="govuk-link" href="/">Return to service home</a> to add veterinary services to your basket.
+        </p>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
