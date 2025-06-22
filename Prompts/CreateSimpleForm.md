@@ -19,3 +19,7 @@ Move all the hardcoded products, vet visits functionality to an API named vetvis
 For the API, Add swagger open/api documentation so can see the endpoints and test them interactively.
 
 //API Docs will appear at http://localhost:3001/api-docs/
+
+# Prompt 4 - Create Startup scripts
+
+Create startup script to launch api and then the website, the entire app should be launched via npm run dev
