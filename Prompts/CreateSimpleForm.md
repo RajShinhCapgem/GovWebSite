@@ -15,3 +15,7 @@ I want a page linked from VetVisits home page that creates a basket page represe
 # Prompt 3 - Create API and connect web app
 
 Move all the hardcoded products, vet visits functionality to an API named vetvisits-api (the values can be harded there) and integrate it with the vet visits app
+
+For the API, Add swagger open/api documentation so can see the endpoints and test them interactively.
+
+//API Docs will appear at http://localhost:3001/api-docs/
