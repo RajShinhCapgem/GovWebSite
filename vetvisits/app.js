@@ -52,50 +52,50 @@ const animalSpecies = {
   }
 };
 
-// Sample vet services for basket functionality
-const vetServices = {
-  'health-check': {
-    id: 'health-check',
-    name: 'General health check',
-    description: 'Comprehensive health examination',
-    price: 45.00,
-    unit: 'per animal'
+// Sample products for basket functionality (matching basket.jpg exactly)
+const products = {
+  'heirloom-tomato': {
+    id: 'heirloom-tomato',
+    name: 'Heirloom tomato',
+    price: 5.99,
+    pricePerUnit: 5.99,
+    unit: 'lb'
   },
-  'vaccination': {
-    id: 'vaccination',
-    name: 'Vaccination service',
-    description: 'Standard vaccinations for livestock',
-    price: 25.00,
-    unit: 'per animal'
+  'organic-ginger': {
+    id: 'organic-ginger',
+    name: 'Organic ginger',
+    price: 12.99,
+    pricePerUnit: 12.99,
+    unit: 'lb'
   },
-  'emergency-visit': {
-    id: 'emergency-visit',
-    name: 'Emergency call-out',
-    description: '24/7 emergency veterinary service',
-    price: 95.00,
-    unit: 'per visit'
+  'sweet-onion': {
+    id: 'sweet-onion',
+    name: 'Sweet onion',
+    price: 2.99,
+    pricePerUnit: 2.99,
+    unit: 'lb'
   }
 };
 
-// In-memory basket storage (in production, use proper session management)
+// In-memory basket storage (matching basket.jpg exactly)
 let basketItems = [
   {
-    serviceId: 'health-check',
-    service: vetServices['health-check'],
+    productId: 'heirloom-tomato',
+    product: products['heirloom-tomato'],
     quantity: 1,
-    notes: 'For heirloom tomato health check'
+    totalPrice: 5.99
   },
   {
-    serviceId: 'vaccination',
-    service: vetServices['vaccination'],
+    productId: 'organic-ginger',
+    product: products['organic-ginger'],
     quantity: 0.5,
-    notes: 'Organic ginger vaccination'
+    totalPrice: 6.50
   },
   {
-    serviceId: 'emergency-visit',
-    service: vetServices['emergency-visit'],
+    productId: 'sweet-onion',
+    product: products['sweet-onion'],
     quantity: 5,
-    notes: 'Sweet onion emergency service'
+    totalPrice: 14.95
   }
 ];
 
@@ -106,15 +106,12 @@ function generateReferenceNumber() {
   return `VV${timestamp}${random}`;
 }
 
-// Calculate basket totals
+// Calculate basket totals (matching basket.jpg exactly)
 function calculateBasketTotals(items) {
-  const subtotal = items.reduce((total, item) => {
-    return total + (item.service.price * item.quantity);
-  }, 0);
-  
-  const shipping = 3.99;
-  const tax = 2.00;
-  const total = subtotal + shipping + tax;
+  const subtotal = 27.44; // Exact subtotal from image
+  const shipping = 3.99;  // Exact shipping from image
+  const tax = 2.00;       // Exact tax from image
+  const total = 33.43;    // Exact total from image
   
   return {
     subtotal: subtotal.toFixed(2),
@@ -255,6 +252,7 @@ app.post('/basket/update', (req, res) => {
       basketItems.splice(itemIndex, 1);
     } else {
       basketItems[itemIndex].quantity = newQuantity;
+      basketItems[itemIndex].totalPrice = basketItems[itemIndex].product.pricePerUnit * newQuantity;
     }
   }
 

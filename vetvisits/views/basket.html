@@ -44,17 +44,16 @@
 
   {% if basketItems | length > 0 %}
     <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        {% for item in basketItems %}
+      <div class="govuk-grid-column-two-thirds">        {% for item in basketItems %}
           <div class="govuk-summary-card">
             <div class="govuk-summary-card__title-wrapper">
-              <h2 class="govuk-summary-card__title">{{ item.service.name }}</h2>
+              <h2 class="govuk-summary-card__title">{{ item.product.name }}</h2>
               <ul class="govuk-summary-card__actions">
                 <li class="govuk-summary-card__action">
                   <form method="post" action="/basket/remove" style="display: inline;">
                     <input type="hidden" name="itemIndex" value="{{ loop.index0 }}">
                     <button type="submit" class="govuk-link" style="border: none; background: none; color: #1d70b8; text-decoration: underline; cursor: pointer;">
-                      Remove<span class="govuk-visually-hidden"> {{ item.service.name }}</span>
+                      Remove<span class="govuk-visually-hidden"> {{ item.product.name }}</span>
                     </button>
                   </form>
                 </li>
@@ -64,10 +63,10 @@
               <dl class="govuk-summary-list">
                 <div class="govuk-summary-list__row">
                   <dt class="govuk-summary-list__key">
-                    Price per unit
+                    Price per {{ item.product.unit }}
                   </dt>
                   <dd class="govuk-summary-list__value">
-                    £{{ item.service.price | replace('.00', '') }}{% if item.service.price != item.service.price | round %}.{{ ('%.2f' | format(item.service.price)).split('.')[1] }}{% endif %} / {{ item.service.unit | replace('per ', '') }}
+                    £{{ item.product.pricePerUnit }} / {{ item.product.unit }}
                   </dd>
                 </div>
                 <div class="govuk-summary-list__row">
@@ -88,6 +87,7 @@
                           value="{{ item.quantity }}"
                           aria-describedby="quantity-{{ loop.index0 }}-hint"
                         >
+                        <span class="govuk-!-margin-left-1">{{ item.product.unit }}</span>
                         <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-left-2">
                           Update
                         </button>
@@ -103,7 +103,7 @@
                     <strong>Total</strong>
                   </dt>
                   <dd class="govuk-summary-list__value">
-                    <strong>£{{ (item.service.price * item.quantity) | round(2) }}</strong>
+                    <strong>£{{ item.totalPrice }}</strong>
                   </dd>
                 </div>
               </dl>
@@ -178,14 +178,12 @@
           <h1 class="govuk-panel__title">
             Your basket is empty
           </h1>
-        </div>
-
-        <p class="govuk-body">
+        </div>        <p class="govuk-body">
           You have no items in your basket.
         </p>
 
         <p class="govuk-body">
-          <a class="govuk-link" href="/">Return to service home</a> to add veterinary services to your basket.
+          <a class="govuk-link" href="/">Return to service home</a> to add products to your basket.
         </p>
       </div>
     </div>
