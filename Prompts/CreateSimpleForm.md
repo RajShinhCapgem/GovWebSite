@@ -1,3 +1,13 @@
+Ensure packages are installed:
+
+npm install concurrently --save-dev
+npm install axios
+npm install express
+npm install cors
+npm install helmet
+npm install swagger-jsdoc
+npm install swagger-ui-express
+
 # Prompt 1 - Create Site
 
 Create a single-page Node.js Express app using GOV.UK Design System named vetvisits inside the current folder for farmers to register animals for vet visits, with a page for selecting the species the farmer has, and on the next page adding the animal count based on the sub categories of that species (e.g., ewes).
