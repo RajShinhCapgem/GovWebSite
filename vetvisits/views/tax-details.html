@@ -1,0 +1,139 @@
+{% extends "layout.html" %}
+
+{% block pageTitle %}Tax Details{% endblock %}
+
+{% block breadcrumbs %}
+<div class="govuk-breadcrumbs">
+  <ol class="govuk-breadcrumbs__list">
+    <li class="govuk-breadcrumbs__list-item">
+      <a class="govuk-breadcrumbs__link" href="/">Home</a>
+    </li>
+    <li class="govuk-breadcrumbs__list-item">
+      Tax Details
+    </li>
+  </ol>
+</div>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      
+      {% if errors %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">
+            There is a problem
+          </h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              {% for error in errors %}
+                <li>
+                  <a href="{{ error.href }}">{{ error.text }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">Tax Details</h1>
+
+      <p class="govuk-body-l">
+        Enter your tax information to complete your registration.
+      </p>
+
+      <form method="post" action="/tax-details" novalidate>
+        
+        <div class="govuk-form-group{% if errors and errors | selectattr('href', 'equalto', '#ssn') | list | length > 0 %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--m" for="ssn">
+            Social Security Number
+          </label>
+          <div id="ssn-hint" class="govuk-hint">
+            For example, 123-45-6789
+          </div>
+          {% if errors and errors | selectattr('href', 'equalto', '#ssn') | list | length > 0 %}
+            {% for error in errors %}
+              {% if error.href == '#ssn' %}
+                <p id="ssn-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">Error:</span>
+                  {{ error.text }}
+                </p>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          <input class="govuk-input{% if errors and errors | selectattr('href', 'equalto', '#ssn') | list | length > 0 %} govuk-input--error{% endif %}" 
+                 id="ssn" 
+                 name="ssn" 
+                 type="text" 
+                 value="{{ formData.ssn if formData.ssn else '' }}"
+                 aria-describedby="ssn-hint{% if errors and errors | selectattr('href', 'equalto', '#ssn') | list | length > 0 %} ssn-error{% endif %}"
+                 autocomplete="off">
+        </div>
+
+        <div class="govuk-form-group{% if errors and errors | selectattr('href', 'equalto', '#filing-status') | list | length > 0 %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--m" for="filing-status">
+            Filing Status
+          </label>
+          {% if errors and errors | selectattr('href', 'equalto', '#filing-status') | list | length > 0 %}
+            {% for error in errors %}
+              {% if error.href == '#filing-status' %}
+                <p id="filing-status-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">Error:</span>
+                  {{ error.text }}
+                </p>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          <select class="govuk-select{% if errors and errors | selectattr('href', 'equalto', '#filing-status') | list | length > 0 %} govuk-select--error{% endif %}" 
+                  id="filing-status" 
+                  name="filing-status"
+                  {% if errors and errors | selectattr('href', 'equalto', '#filing-status') | list | length > 0 %}aria-describedby="filing-status-error"{% endif %}>
+            <option value="">Select filing status</option>
+            <option value="single"{% if formData['filing-status'] == 'single' %} selected{% endif %}>Single</option>
+            <option value="married-filing-jointly"{% if formData['filing-status'] == 'married-filing-jointly' %} selected{% endif %}>Married Filing Jointly</option>
+            <option value="married-filing-separately"{% if formData['filing-status'] == 'married-filing-separately' %} selected{% endif %}>Married Filing Separately</option>
+            <option value="head-of-household"{% if formData['filing-status'] == 'head-of-household' %} selected{% endif %}>Head of Household</option>
+            <option value="qualifying-widow"{% if formData['filing-status'] == 'qualifying-widow' %} selected{% endif %}>Qualifying Widow(er)</option>
+          </select>
+        </div>
+
+        <div class="govuk-form-group{% if errors and errors | selectattr('href', 'equalto', '#dependents') | list | length > 0 %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--m" for="dependents">
+            Number of Dependents
+          </label>
+          <div id="dependents-hint" class="govuk-hint">
+            Enter the number of people you claim as dependents
+          </div>
+          {% if errors and errors | selectattr('href', 'equalto', '#dependents') | list | length > 0 %}
+            {% for error in errors %}
+              {% if error.href == '#dependents' %}
+                <p id="dependents-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">Error:</span>
+                  {{ error.text }}
+                </p>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          <input class="govuk-input govuk-input--width-3{% if errors and errors | selectattr('href', 'equalto', '#dependents') | list | length > 0 %} govuk-input--error{% endif %}" 
+                 id="dependents" 
+                 name="dependents" 
+                 type="number" 
+                 min="0"
+                 value="{{ formData.dependents if formData.dependents else '' }}"
+                 aria-describedby="dependents-hint{% if errors and errors | selectattr('href', 'equalto', '#dependents') | list | length > 0 %} dependents-error{% endif %}">
+        </div>
+
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button" data-module="govuk-button">
+            Continue
+          </button>
+          <a class="govuk-link" href="/">Cancel</a>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+{% endblock %}

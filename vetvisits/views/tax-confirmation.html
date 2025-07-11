@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block pageTitle %}Tax details submitted{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">Tax details submitted</h1>
+        <div class="govuk-panel__body">
+          Your reference number<br><strong>{{ referenceNumber }}</strong>
+        </div>
+      </div>
+
+      <p class="govuk-body">
+        We have sent you a confirmation email.
+      </p>
+
+      <h2 class="govuk-heading-m">What happens next</h2>
+
+      <p class="govuk-body">
+        Your tax information has been recorded and will be processed as part of your registration.
+      </p>
+
+      <h2 class="govuk-heading-m">Your tax details</h2>
+      
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Social Security Number
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ taxDetails.ssnMasked }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Filing Status
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ taxDetails.filingStatusDisplay }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Number of Dependents
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ taxDetails.dependents }}
+          </dd>
+        </div>
+      </dl>
+
+      <p class="govuk-body">
+        <a href="/" class="govuk-link">Return to start page</a>
+      </p>
+
+    </div>
+  </div>
+{% endblock %}

@@ -218,6 +218,88 @@ app.post('/animal-counts', async (req, res) => {
   }
 });
 
+// Tax Details routes
+app.get('/tax-details', (req, res) => {
+  res.render('tax-details', {
+    formData: {}
+  });
+});
+
+app.post('/tax-details', (req, res) => {
+  const { ssn, 'filing-status': filingStatus, dependents } = req.body;
+  const errors = [];
+  const formData = req.body;
+
+  // Validate Social Security Number
+  if (!ssn || ssn.trim() === '') {
+    errors.push({
+      text: 'Enter your Social Security Number',
+      href: '#ssn'
+    });
+  } else if (!/^\d{3}-?\d{2}-?\d{4}$/.test(ssn.replace(/\s+/g, ''))) {
+    errors.push({
+      text: 'Enter a valid Social Security Number in the format 123-45-6789',
+      href: '#ssn'
+    });
+  }
+
+  // Validate Filing Status
+  if (!filingStatus || filingStatus === '') {
+    errors.push({
+      text: 'Select your filing status',
+      href: '#filing-status'
+    });
+  }
+
+  // Validate Number of Dependents
+  if (dependents === '' || dependents === null || dependents === undefined) {
+    errors.push({
+      text: 'Enter the number of dependents',
+      href: '#dependents'
+    });
+  } else if (isNaN(dependents) || parseInt(dependents) < 0) {
+    errors.push({
+      text: 'Number of dependents must be 0 or more',
+      href: '#dependents'
+    });
+  }
+
+  if (errors.length > 0) {
+    return res.render('tax-details', {
+      errors,
+      formData
+    });
+  }
+
+  // Generate reference number
+  const referenceNumber = `TAX${Date.now().toString().slice(-6)}`;
+  
+  // Mask SSN for display (show only last 4 digits)
+  const ssnMasked = `***-**-${ssn.slice(-4)}`;
+  
+  // Convert filing status to display format
+  const filingStatusMap = {
+    'single': 'Single',
+    'married-filing-jointly': 'Married Filing Jointly',
+    'married-filing-separately': 'Married Filing Separately',
+    'head-of-household': 'Head of Household',
+    'qualifying-widow': 'Qualifying Widow(er)'
+  };
+
+  const taxDetails = {
+    ssn: ssn,
+    ssnMasked: ssnMasked,
+    filingStatus: filingStatus,
+    filingStatusDisplay: filingStatusMap[filingStatus],
+    dependents: parseInt(dependents)
+  };
+
+  res.render('tax-confirmation', {
+    referenceNumber,
+    taxDetails
+  });
+});
+
 // Basket routes
 app.get('/basket', async (req, res) => {
   try {
